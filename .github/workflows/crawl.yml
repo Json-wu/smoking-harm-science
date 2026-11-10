@@ -1,0 +1,40 @@
+name: RSS crawl
+
+on:
+  schedule:
+  - cron: '30 1 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: crawl-main
+  cancel-in-progress: false
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Fetch RSS and write brief posts
+        run: npm run crawl
+
+      - name: Commit crawl results
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore(crawl): ingest RSS brief articles'
+          file_pattern: |
+            src/content/blog/brief-*.md
+            data/crawl-state.json

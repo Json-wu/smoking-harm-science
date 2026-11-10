@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "ingested": {
+    "bb3a2ec89e538185": {
+      "slug": "brief-bb3a2ec89e538185",
+      "at": "2026-11-10T09:15:21.298Z",
+      "source": "who-news",
+      "link": "https://www.who.int/news/item/27-07-2020-who-statement-on-heated-tobacco-products-and-the-us-fda-decision-regarding-iqos"
+    },
+    "64929099efc94d42": {
+      "slug": "brief-64929099efc94d42",
+      "at": "2026-11-10T09:15:21.300Z",
+      "source": "who-news",
+      "link": "https://www.who.int/news/item/29-05-2020-stop-tobacco-industry-exploitation-of-children-and-young-people"
+    },
+    "46054174a0a2b672": {
+      "slug": "brief-46054174a0a2b672",
+      "at": "2026-11-10T09:15:21.301Z",
+      "source": "who-news",
+      "link": "https://www.who.int/news/item/11-05-2020-who-statement-tobacco-use-and-covid-19"
+    },
+    "ae020a6db6730612": {
+      "slug": "brief-ae020a6db6730612",
+      "at": "2026-11-10T09:15:21.302Z",
+      "source": "who-news",
+      "link": "https://www.who.int/news/item/26-05-2003-efdef5c2-0e18-435f-a4d3-37757f7b178f"
+    },
+    "e6f18c5401b21a1d": {
+      "slug": "brief-e6f18c5401b21a1d",
+      "at": "2026-11-10T09:15:21.303Z",
+      "source": "who-news",
+      "link": "https://www.who.int/news/item/26-07-2019-who-launches-new-report-on-the-global-tobacco-epidemic"
+    }
+  },
+  "updatedAt": "2026-11-10T09:15:21.303Z"
+}

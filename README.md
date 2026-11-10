@@ -37,6 +37,21 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 - 关于 `/about/`、分类 `/category/{harm|methods|knowledge}/`、小技巧 `/tips/`
 - 左右分栏阅读，侧栏支持关键词搜索与分类快捷筛选
 
+## 自动抓取与部署
+
+| 命令 / 工作流 | 作用 |
+|---------------|------|
+| `npm run crawl` | 读取 `config/crawl-sources.json` 中的 RSS，写入 `src/content/blog/brief-*.md` |
+| `.github/workflows/crawl.yml` | 每周一 01:30 UTC 定时抓取，有更新则自动 commit |
+| `.github/workflows/deploy.yml` | `main` 推送后构建并部署 |
+
+**部署（二选一）**
+
+1. **SSH / rsync（默认）** — 在仓库 Secrets 配置：`SSH_PRIVATE_KEY`、`SSH_HOST`、`SSH_USER`、`DEPLOY_PATH`（服务器上静态目录）。  
+2. **GitHub Pages** — 仓库 Variables 设置 `USE_GITHUB_PAGES=true`，并在仓库 Pages 里选用 `gh-pages` 分支；`public/CNAME` 已含 `quitsmoking.aivelo.net`。
+
+抓取状态与去重见 `data/crawl-state.json`；可按需编辑 `config/crawl-sources.json` 中的源与关键词。
+
 ## SEO / GEO
 
 - `public/robots.txt`、`public/llms.txt`；sitemap 构建时生成

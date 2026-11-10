@@ -1,0 +1,27 @@
+{
+  "maxNewPerRun": 5,
+  "keywordPattern": "\\btobacco\\b|\\bsmoking\\b|\\bcigarette\\b|\\bnicotine\\b|\\bvape\\b|\\bvaping\\b|\\bsecondhand\\b|\\bcessation\\b|\\bquitting\\b|\\bFCTC\\b|Framework Convention on Tobacco|tobacco control",
+  "sources": [
+    {
+      "id": "who-news",
+      "label": "WHO News",
+      "url": "https://www.who.int/rss-feeds/news-english.xml",
+      "defaultCategory": "烟草知识",
+      "enabled": true
+    },
+    {
+      "id": "pubmed-cessation",
+      "label": "PubMed — smoking cessation",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=smoking+cessation&limit=20",
+      "defaultCategory": "戒烟方法",
+      "enabled": true
+    },
+    {
+      "id": "pubmed-secondhand",
+      "label": "PubMed — secondhand smoke",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=secondhand+smoke&limit=15",
+      "defaultCategory": "吸烟危害",
+      "enabled": true
+    }
+  ]
+}
