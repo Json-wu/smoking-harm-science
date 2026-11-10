@@ -62,6 +62,15 @@ jobs:
           SOURCE: dist/
           ARGS: '-avzr --delete'
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install (post-deploy scripts)
+        run: npm ci
+
       - name: Notify IndexNow & GSC (changed blog URLs)
         continue-on-error: true
         run: node scripts/post-deploy-index.mjs
@@ -94,6 +103,15 @@ jobs:
           folder: dist
           clean: true
           single-commit: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install (post-deploy scripts)
+        run: npm ci
 
       - name: Notify IndexNow & GSC (changed blog URLs)
         continue-on-error: true

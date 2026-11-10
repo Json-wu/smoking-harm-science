@@ -1,4 +1,3 @@
-import { GoogleAuth } from 'google-auth-library';
 import { siteOrigin } from './site-url.mjs';
 
 const WEBMASTERS_SCOPE = 'https://www.googleapis.com/auth/webmasters';
@@ -24,6 +23,14 @@ export async function submitGscSitemap() {
   if (!credentials) {
     console.log('[gsc] 未配置 GOOGLE_SERVICE_ACCOUNT_JSON，跳过 Search Console sitemap 提交');
     return 'skipped';
+  }
+
+  let GoogleAuth;
+  try {
+    ({ GoogleAuth } = await import('google-auth-library'));
+  } catch {
+    console.error('[gsc] 缺少依赖 google-auth-library，请在 CI/本地执行 npm ci');
+    return false;
   }
 
   const origin = siteOrigin();
