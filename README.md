@@ -42,7 +42,7 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 | 命令 / 工作流 | 作用 |
 |---------------|------|
 | `npm run crawl` | 中文/英文 RSS → DeepSeek 写稿 + 审核 → `auto-*.md`（需 `DEEPSEEK_API_KEY`） |
-| `.github/workflows/crawl.yml` | **仅手动**触发；产出为 Artifact，**不会**自动 commit（请本地抓取后自行提交） |
+| `.github/workflows/crawl.yml` | **每周一 09:30（北京时间）** 定时写稿；支持手动触发；有新稿则自动 commit → 触发部署 |
 | `.github/workflows/deploy.yml` | `main` 推送后构建并部署 |
 
 **部署（二选一）**
@@ -52,7 +52,7 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 
 在 GitHub **Settings → Secrets** 配置 `DEEPSEEK_API_KEY`。国外 RSS 成稿也须为**简体中文**（DeepSeek 写稿+审核+脚本校验）。抓取状态见 `data/crawl-state.json`，未通过见 `data/crawl-rejected.json`。
 
-**提交策略**：抓取结果不会自动 push；请你在本地审阅后自行 `git commit`（需要时再说一声让我帮你提交）。
+**定时抓取前提**：在仓库 **Settings → Secrets** 配置 `DEEPSEEK_API_KEY`（Actions 未配置则定时任务会失败）。单次最多新发 `maxNewPerRun` 篇（默认 2，见 `config/crawl-sources.json`）。本地试跑仍可用 `npm run crawl`，自行 commit。
 
 ## SEO / GEO
 
