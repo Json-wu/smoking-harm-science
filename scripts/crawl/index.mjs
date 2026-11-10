@@ -37,6 +37,7 @@ if (existsSync(ENV_PATH)) {
 const CONFIG_PATH = path.join(ROOT, 'config/crawl-sources.json');
 const STATE_PATH = path.join(ROOT, 'data/crawl-state.json');
 const REJECTED_PATH = path.join(ROOT, 'data/crawl-rejected.json');
+const LAST_RUN_PATH = path.join(ROOT, 'data/crawl-last-run.json');
 const BLOG_DIR = path.join(ROOT, 'src/content/blog');
 
 const VALID_CATEGORIES = new Set(['吸烟危害', '戒烟方法', '烟草知识']);
@@ -69,6 +70,10 @@ async function loadJson(filePath, fallback) {
   }
 }
 
+async function writeLastRun(summary) {
+  await writeFile(LAST_RUN_PATH, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+}
+
 async function emitGithubStepOutput(created, processed, stateDirtyFlag = false) {
   const out = process.env.GITHUB_OUTPUT;
   if (!out) return;
@@ -76,6 +81,19 @@ async function emitGithubStepOutput(created, processed, stateDirtyFlag = false) 
     out,
     `created=${created}\nprocessed=${processed}\npublished=${created > 0 ? 1 : 0}\nstate_dirty=${stateDirtyFlag ? 1 : 0}\n`,
   );
+}
+
+async function finishRun({ created, processed, stateDirty }) {
+  const summary = {
+    created,
+    processed,
+    published: created > 0,
+    stateDirty,
+    at: new Date().toISOString(),
+  };
+  await writeLastRun(summary);
+  await emitGithubStepOutput(created, processed, stateDirty);
+  return summary;
 }
 
 async function writePostFile({ slug, title, description, pubDate, category, tags, body }) {
@@ -271,7 +289,7 @@ async function main() {
 
   if (processed === 0) {
     console.log('[crawl] 无新可处理条目，未调用写稿，未生成文章。');
-    await emitGithubStepOutput(0, 0);
+    await finishRun({ created: 0, processed: 0, stateDirty: false });
     return;
   }
 
@@ -287,7 +305,7 @@ async function main() {
   } else {
     console.log(`[crawl] 完成，本次新发布 ${created} 篇。`);
   }
-  await emitGithubStepOutput(created, processed, stateDirty);
+  await finishRun({ created, processed, stateDirty });
 }
 
 main().catch((err) => {

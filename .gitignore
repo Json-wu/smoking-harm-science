@@ -18,6 +18,9 @@ dist/
 # logs
 *.log
 
+# CI 诊断（不提交）
+data/crawl-last-run.json
+
 # cursor (keep project rules)
 .cursor/*
 !.cursor/rules/

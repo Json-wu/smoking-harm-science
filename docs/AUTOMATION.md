@@ -23,7 +23,17 @@
 | `schedule` | 每周**二、四、六** **01:30 UTC**（北京时间 **09:30**） |
 | `workflow_dispatch` | Actions 页手动「Run workflow」 |
 
-流程：`npm run crawl`（每次最多 **1** 篇）→ 无新 RSS 素材则**不写稿、不写库、不 commit** → 有新稿则 commit `auto-*.md` 并部署 → 仅审核未过审时可能只提交状态 JSON（不生成文章）。
+流程：`npm run crawl`（每次最多 **1** 篇）→ 无新 RSS 素材则**不写稿、不写库、不 commit** → 有变更则 commit `auto-*.md` / 状态 JSON → **主动触发** `deploy.yml`（因 `GITHUB_TOKEN` 的 push 默认不会再触发其它 workflow）。
+
+### 手动跑 crawl 成功但站上没有新文章？
+
+1. 打开该次 **RSS crawl** 日志，看 **Crawl run summary**：
+   - `"published": false` / `created: 0` → 没有新稿（RSS 已去重、未过审、或无命中素材），**属于正常绿勾**
+   - `"published": true` → 应出现 **Commit crawl results** 的 commit，并出现 **Trigger Build and deploy**
+2. 看 **Build and deploy** 是否成功、服务器是否已更新 `dist`
+3. 仓库 `main` 上是否已有新的 `src/content/blog/auto-*.md`（没有则未生成或未 commit）
+
+未过审记录见 Artifact 或 `data/crawl-rejected.json`。
 
 单次新发上限：`maxNewPerRun` = **1**。
 

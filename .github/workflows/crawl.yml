@@ -1,6 +1,6 @@
 name: RSS crawl
 
-# 定时 + 手动：RSS → DeepSeek 中文写稿/审核 → 仅有新稿时 commit（触发 deploy）
+# 定时 + 手动：RSS → DeepSeek 中文写稿/审核 → 有变更则 commit → 主动触发 deploy
 on:
   schedule:
     # 每周二、四、六 01:30 UTC（北京时间 09:30）
@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: crawl-main
@@ -20,6 +21,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -36,8 +39,19 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
 
+      - name: Crawl run summary
+        run: |
+          if [ -f data/crawl-last-run.json ]; then
+            echo "=== crawl-last-run.json ==="
+            cat data/crawl-last-run.json
+          else
+            echo "未生成 crawl-last-run.json"
+          fi
+          echo "=== git status (auto 稿) ==="
+          git status --short src/content/blog/auto-*.md data/crawl-state.json 2>/dev/null || true
+
       - name: Commit crawl results
-        if: steps.crawl.outputs.published == '1'
+        id: commit
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'chore(crawl): publish reviewed auto article'
@@ -46,17 +60,11 @@ jobs:
             data/crawl-state.json
             data/crawl-rejected.json
 
-      - name: Commit crawl state (no new article)
-        if: >-
-          steps.crawl.outputs.processed != '0' &&
-          steps.crawl.outputs.published != '1' &&
-          steps.crawl.outputs.state_dirty == '1'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 'chore(crawl): update crawl state only'
-          file_pattern: |
-            data/crawl-state.json
-            data/crawl-rejected.json
+      - name: Trigger Build and deploy
+        if: steps.commit.outputs.changes_detected == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh workflow run deploy.yml --ref main
 
       - name: Upload crawl output (artifact backup)
         if: always()
@@ -67,5 +75,6 @@ jobs:
             src/content/blog/auto-*.md
             data/crawl-state.json
             data/crawl-rejected.json
+            data/crawl-last-run.json
           if-no-files-found: ignore
           retention-days: 14
