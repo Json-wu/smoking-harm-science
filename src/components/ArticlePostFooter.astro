@@ -1,0 +1,80 @@
+---
+import MiniProgramEntry from '@/components/MiniProgramEntry.astro';
+import type { BlogPost } from '@/lib/posts';
+import { getPostSlug } from '@/lib/posts';
+
+interface Props {
+  older?: BlogPost;
+  newer?: BlogPost;
+  recommended: BlogPost[];
+}
+
+const { older, newer, recommended } = Astro.props;
+---
+
+<footer class="mt-12 space-y-8 border-t border-theme pt-10">
+  {
+    recommended.length > 0 && (
+      <section aria-labelledby="related-heading">
+        <h2 id="related-heading" class="text-sm font-semibold uppercase tracking-wide text-theme-muted">
+          继续阅读
+        </h2>
+        <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+          {recommended.map((post) => (
+            <li>
+              <a href={`/blog/${getPostSlug(post)}/`} class="calm-card theme-card group flex h-full flex-col p-4 !shadow-none transition">
+                <span class="badge-category !inline-block w-fit">{post.data.category}</span>
+                <span class="mt-2 text-sm font-semibold text-theme group-hover:text-theme-brand">
+                  {post.data.title}
+                </span>
+                <span class="mt-1 line-clamp-2 text-xs leading-relaxed text-theme-muted">{post.data.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+
+  <section class="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+    <MiniProgramEntry variant="article" />
+    <a
+      href="/tips/"
+      class="calm-card theme-card group block p-6 !shadow-none transition"
+      style="background: linear-gradient(145deg, var(--color-surface-muted), var(--color-brand-subtle));"
+    >
+      <h2 class="text-base font-semibold text-theme group-hover:text-theme-brand">此刻有点焦虑？</h2>
+      <p class="mt-2 text-sm leading-relaxed text-theme-secondary">
+        吸烟冲动往往几分钟后会减弱。打开「戒烟小技巧」专栏，选一项当下就能做的应对。
+      </p>
+      <p class="mt-4 text-sm font-medium text-theme-brand">进入小技巧专栏 →</p>
+      <p class="mt-2 text-xs text-theme-muted">本站不提供诊疗；持续不适请向医生或戒烟门诊求助。</p>
+    </a>
+  </section>
+
+  <nav class="flex flex-col gap-3 border-t border-theme pt-6 sm:flex-row sm:justify-between" aria-label="上一篇与下一篇">
+    {
+      older ? (
+        <a href={`/blog/${getPostSlug(older)}/`} class="calm-card theme-card group max-w-md p-4 !shadow-none transition">
+          <span class="text-xs text-theme-muted">← 上一篇</span>
+          <span class="mt-1 block text-sm font-medium text-theme group-hover:text-theme-brand">{older.data.title}</span>
+        </a>
+      ) : (
+        <span />
+      )
+    }
+    {
+      newer ? (
+        <a
+          href={`/blog/${getPostSlug(newer)}/`}
+          class="calm-card theme-card group max-w-md p-4 text-right !shadow-none transition sm:ml-auto"
+        >
+          <span class="text-xs text-theme-muted">下一篇 →</span>
+          <span class="mt-1 block text-sm font-medium text-theme group-hover:text-theme-brand">{newer.data.title}</span>
+        </a>
+      ) : (
+        <span />
+      )
+    }
+  </nav>
+</footer>

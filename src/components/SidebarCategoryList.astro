@@ -1,0 +1,24 @@
+---
+import { categoryCatalog, type CategorySlug } from '@/lib/categories';
+
+const items = Object.entries(categoryCatalog) as [CategorySlug, (typeof categoryCatalog)[CategorySlug]][];
+---
+
+<nav id="sidebar-category-tabs" class="mt-1.5" aria-label="按分类筛选">
+  <ul class="sidebar-cat-tabs grid grid-cols-3 gap-1">
+    {
+      items.map(([, cat]) => (
+        <li class="min-w-0">
+          <button
+            type="button"
+            data-category-filter={cat.label}
+            class="sidebar-cat-tab"
+            aria-pressed="false"
+          >
+            <span class="sidebar-cat-tab__label">{cat.label}</span>
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

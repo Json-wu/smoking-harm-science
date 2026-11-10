@@ -1,0 +1,41 @@
+---
+import type { BlogPost } from '@/lib/posts';
+import { getPostSlug } from '@/lib/posts';
+
+interface Props {
+  posts: BlogPost[];
+  emptyMessage?: string;
+}
+
+const { posts, emptyMessage = '暂无文章。' } = Astro.props;
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+---
+
+{
+  posts.length === 0 ? (
+    <p class="text-sm text-theme-muted">{emptyMessage}</p>
+  ) : (
+    <ul class="space-y-3">
+      {
+        posts.map((post) => (
+          <li>
+            <a
+              href={`/blog/${getPostSlug(post)}/`}
+              class="calm-card theme-card block p-4 !shadow-none transition"
+            >
+              <div class="flex flex-wrap items-center gap-2 text-xs text-theme-muted">
+                <span class="badge-category">{post.data.category}</span>
+                <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+              </div>
+              <h3 class="mt-2 text-base font-semibold text-theme">{post.data.title}</h3>
+              <p class="mt-1 line-clamp-2 text-sm text-theme-secondary">{post.data.description}</p>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  )
+}

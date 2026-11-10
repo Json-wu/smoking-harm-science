@@ -1,0 +1,35 @@
+---
+import { miniProgram } from '@/lib/site';
+import WechatSearchWidget from '@/components/WechatSearchWidget.astro';
+
+interface Props {
+  variant?: 'default' | 'compact' | 'article';
+}
+
+const { variant = 'default' } = Astro.props;
+
+const wrapperClass =
+  variant === 'article'
+    ? 'flex h-full w-full flex-col items-center space-y-4 lg:items-start'
+    : variant === 'compact'
+      ? 'space-y-3'
+      : 'theme-card space-y-4 p-6 bg-gradient-to-br from-[var(--color-brand-subtle)] to-[var(--color-surface-solid)]';
+---
+
+<aside class={wrapperClass} aria-label="微信小程序入口">
+  {
+    variant !== 'compact' && (
+      <div>
+        <h2 class:list={['font-semibold text-theme', variant === 'article' ? 'text-base' : 'text-base']}>
+          {variant === 'article' ? '如果你正在考虑戒烟' : `打开微信「${miniProgram.name}」`}
+        </h2>
+        <p class="mt-2 text-sm leading-relaxed text-theme-secondary">
+          {variant === 'article'
+            ? `搜一搜进入小程序后，可结合打卡、进度与自助页面使用。${miniProgram.hint}`
+            : `搜一搜输入「${miniProgram.name}」。${miniProgram.hint} 功能详情见小技巧专栏。`}
+        </p>
+      </div>
+    )
+  }
+  <WechatSearchWidget />
+</aside>

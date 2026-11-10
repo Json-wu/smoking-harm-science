@@ -1,0 +1,23 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+
+# astro
+.astro/
+
+# env
+.env
+.env.*
+
+# OS
+.DS_Store
+
+# logs
+*.log
+
+# cursor (keep project rules)
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**

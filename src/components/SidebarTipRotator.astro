@@ -1,0 +1,60 @@
+---
+import { quitTips } from '@/lib/quit-tips';
+
+interface Props {
+  elementId: string;
+  class?: string;
+}
+
+const { elementId, class: className = '' } = Astro.props;
+const tipTitles = quitTips.map((tip) => tip.title);
+const firstTitle = tipTitles[0] ?? '';
+---
+
+<span
+  id={elementId}
+  data-tip-rotator
+  class:list={['sidebar-tip-line text-xs leading-relaxed', className]}
+  aria-live="polite"
+  aria-atomic="true"
+>
+  {firstTitle}
+</span>
+
+<script>
+  import { quitTips } from '@/lib/quit-tips';
+
+  const tipTitles = quitTips.map((tip) => tip.title);
+  const INTERVAL_MS = 5000;
+  const FADE_MS = 220;
+
+  function initTipRotators() {
+    const nodes = document.querySelectorAll<HTMLElement>('[data-tip-rotator]');
+    if (nodes.length === 0 || tipTitles.length === 0) return;
+    if (document.documentElement.dataset.tipRotatorBound === '1') return;
+    document.documentElement.dataset.tipRotatorBound = '1';
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let index = 0;
+    const tick = () => {
+      nodes.forEach((el) => el.classList.add('is-fading'));
+      window.setTimeout(() => {
+        index = (index + 1) % tipTitles.length;
+        nodes.forEach((el) => {
+          el.textContent = tipTitles[index];
+          el.classList.remove('is-fading');
+        });
+      }, FADE_MS);
+    };
+
+    const timer = window.setInterval(tick, INTERVAL_MS);
+    window.addEventListener('pagehide', () => window.clearInterval(timer), { once: true });
+  }
+
+  initTipRotators();
+  document.addEventListener('astro:page-load', () => {
+    delete document.documentElement.dataset.tipRotatorBound;
+    initTipRotators();
+  });
+</script>

@@ -1,0 +1,105 @@
+---
+import '@/styles/global.css';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { siteName, siteDescription, siteUrl } from '@/lib/site';
+import { buildWebSiteJsonLd, mergeJsonLd } from '@/lib/seo';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonical?: string;
+  markdownAlternate?: string;
+  footerMinimal?: boolean;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+  keywords?: string;
+  articlePublished?: string;
+  articleSection?: string;
+  jsonLd?: Record<string, unknown>[];
+}
+
+const {
+  title,
+  description = siteDescription,
+  canonical,
+  markdownAlternate,
+  footerMinimal = false,
+  ogType = 'website',
+  noindex = false,
+  keywords,
+  articlePublished,
+  articleSection,
+  jsonLd = [],
+} = Astro.props;
+
+const pageTitle = title ? `${title} | ${siteName}` : siteName;
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+const ogImage = new URL('/favicon.svg', siteUrl).href;
+const robots = noindex ? 'noindex, follow' : 'index, follow';
+const structuredData = mergeJsonLd(buildWebSiteJsonLd(), ...jsonLd);
+const keywordsContent = keywords?.trim() || undefined;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content={description} />
+    {keywordsContent && <meta name="keywords" content={keywordsContent} />}
+    <meta name="robots" content={robots} />
+    <meta name="author" content={siteName} />
+    <meta id="meta-theme-color" name="theme-color" content="#f0fdf9" />
+    <script is:inline>
+      (function () {
+        var k = 'site-theme';
+        var t = localStorage.getItem(k);
+        if (t === 'light' || t === 'dark') {
+          document.documentElement.setAttribute('data-theme', t);
+          var m = document.getElementById('meta-theme-color');
+          if (m) m.setAttribute('content', t === 'dark' ? '#0f172a' : '#f0fdf9');
+        }
+      })();
+    </script>
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="zh-CN" href={canonicalUrl} />
+    {markdownAlternate && (
+      <link rel="alternate" type="text/markdown" href={markdownAlternate} title={`${title ?? siteName}（Markdown）`} />
+    )}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    {
+      ogType === 'article' && articlePublished && (
+        <meta property="article:published_time" content={articlePublished} />
+      )
+    }
+    {ogType === 'article' && articleSection && <meta property="article:section" content={articleSection} />}
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {
+      structuredData.map((block) => (
+        <script type="application/ld+json" set:html={JSON.stringify(block)} />
+      ))
+    }
+  </head>
+  <body class="relative flex min-h-screen flex-col">
+    <Header />
+    <main class="relative flex-1 pb-[env(safe-area-inset-bottom)]">
+      <slot />
+    </main>
+    <Footer minimal={footerMinimal} />
+  </body>
+</html>

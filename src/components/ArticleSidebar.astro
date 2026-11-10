@@ -1,0 +1,191 @@
+---
+import type { BlogPost } from '@/lib/posts';
+import { getPostSlug } from '@/lib/posts';
+import TipsEntryLine from '@/components/TipsEntryLine.astro';
+import SidebarCategoryList from '@/components/SidebarCategoryList.astro';
+
+interface Props {
+  posts: BlogPost[];
+  currentSlug?: string;
+  tipsActive?: boolean;
+}
+
+const { posts, currentSlug, tipsActive = false } = Astro.props;
+
+function formatDate(date: Date) {
+  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+}
+---
+
+<div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+
+<aside
+  id="article-sidebar-drawer"
+  class="sidebar-drawer sidebar-shell lg:sticky lg:top-[var(--header-h)] lg:h-[calc(100dvh-var(--header-h))] lg:w-[min(100%,320px)] lg:shrink-0 lg:border-r"
+  aria-label="文章列表"
+>
+  <div class="sidebar-grab" aria-hidden="true"></div>
+
+  <div class="flex items-center justify-between gap-2 border-b border-theme px-4 py-3 lg:py-4">
+    <div class="min-w-0">
+      <p class="text-xs font-semibold tracking-wide text-theme-brand">阅读清单</p>
+      <p class="mt-0.5 text-xs leading-relaxed text-theme-muted">慢慢读就好，需要时歇一歇再回来。</p>
+    </div>
+    <button
+      type="button"
+      id="sidebar-close-btn"
+      class="btn-primary-soft !min-h-9 !px-3 lg:hidden"
+      aria-label="关闭文章列表"
+    >
+      关闭
+    </button>
+  </div>
+
+  <div class="border-b border-theme px-3 py-2.5">
+    <label class="block">
+      <span class="sr-only">搜索文章</span>
+      <input
+        type="search"
+        id="article-search"
+        name="q"
+        placeholder="搜索标题、分类或关键词…"
+        autocomplete="off"
+        class="theme-input"
+      />
+    </label>
+    <SidebarCategoryList />
+    <p id="article-search-empty" class="mt-2 hidden text-xs text-theme-muted">没有匹配的文章，试试更短的关键词。</p>
+  </div>
+
+  <nav class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3" id="article-list">
+    <p class="sidebar-panel__label mb-2 flex items-baseline gap-1.5 px-0.5">
+      <span>全部文章</span>
+      <span
+        id="article-list-count"
+        class="text-[11px] font-semibold tabular-nums text-theme-faint"
+        data-total={posts.length}
+        aria-label={`共 ${posts.length} 篇`}
+      >
+        {posts.length}
+      </span>
+    </p>
+    <ul class="space-y-1.5">
+      {
+        posts.map((post) => {
+          const slug = getPostSlug(post);
+          const isActive = slug === currentSlug;
+          const haystack = [post.data.title, post.data.description, post.data.category, post.data.tags.join(' ')].join(
+            ' ',
+          );
+          return (
+            <li
+              data-article-item
+              data-haystack={haystack.toLowerCase()}
+              class:list={['article-list-item', isActive && 'is-active']}
+            >
+              <a href={`/blog/${slug}/`} class="sidebar-list-link">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="badge-category truncate !text-[11px]">{post.data.category}</span>
+                  <time class="shrink-0 text-[11px] text-theme-faint" datetime={post.data.pubDate.toISOString()}>
+                    {formatDate(post.data.pubDate)}
+                  </time>
+                </div>
+                <span class="mt-1.5 line-clamp-2 text-sm font-medium leading-snug text-theme">{post.data.title}</span>
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+
+  <div class="hidden shrink-0 border-t border-theme px-3 py-3 lg:block">
+    <a
+      href="/tips/"
+      class:list={['sidebar-list-link calm-card block !border-[var(--color-brand-subtle)]', tipsActive && 'tips-link-active']}
+    >
+      <TipsEntryLine rotatorId="sidebar-tip-rotate" />
+    </a>
+  </div>
+  <div class="shrink-0 border-t border-theme px-3 py-3 lg:hidden">
+    <a
+      href="/tips/"
+      class:list={['sidebar-list-link calm-card block !border-[var(--color-brand-subtle)]', tipsActive && 'tips-link-active']}
+    >
+      <p class="text-xs text-theme-muted">
+        <span class="font-medium text-theme-brand">想抽烟了？</span>
+        点此查看全部技巧
+      </p>
+    </a>
+  </div>
+</aside>
+
+<script>
+  function normalize(text) {
+    return String(text).toLowerCase().trim();
+  }
+
+  function initArticleSidebarSearch() {
+    const input = document.getElementById('article-search');
+    const emptyHint = document.getElementById('article-search-empty');
+    const categoryNav = document.getElementById('sidebar-category-tabs');
+    const countEl = document.getElementById('article-list-count');
+    if (!input) return;
+
+    const totalCount = countEl ? Number(countEl.dataset.total || '0') : 0;
+    const items = document.querySelectorAll('[data-article-item]');
+    const categoryButtons = categoryNav?.querySelectorAll('[data-category-filter]') ?? [];
+
+    const syncCategoryTabs = (q) => {
+      categoryButtons.forEach((btn) => {
+        const label = btn.getAttribute('data-category-filter') || '';
+        const active = q.length > 0 && q === normalize(label);
+        btn.classList.toggle('sidebar-cat-tab--active', active);
+        btn.setAttribute('aria-pressed', String(active));
+      });
+    };
+
+    const applyFilter = () => {
+      const q = normalize(input.value);
+      let visible = 0;
+      items.forEach((el) => {
+        const haystack = el.getAttribute('data-haystack') || '';
+        const show = !q || haystack.includes(q);
+        el.classList.toggle('hidden', !show);
+        if (show) visible += 1;
+      });
+      emptyHint?.classList.toggle('hidden', visible > 0 || !q);
+      syncCategoryTabs(q);
+      if (countEl) {
+        const displayTotal = totalCount || visible;
+        countEl.textContent = String(q ? visible : displayTotal);
+        countEl.setAttribute('aria-label', q ? `筛选结果 ${visible} 篇` : `共 ${displayTotal} 篇`);
+      }
+    };
+
+    categoryButtons.forEach((btn) => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        const label = btn.getAttribute('data-category-filter') || '';
+        if (normalize(input.value) === normalize(label)) {
+          input.value = '';
+        } else {
+          input.value = label;
+        }
+        applyFilter();
+        input.focus();
+      });
+    });
+
+    if (input.dataset.bound !== '1') {
+      input.dataset.bound = '1';
+      input.addEventListener('input', applyFilter);
+    }
+
+    applyFilter();
+  }
+
+  initArticleSidebarSearch();
+  document.addEventListener('astro:page-load', initArticleSidebarSearch);
+</script>

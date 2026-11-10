@@ -1,0 +1,26 @@
+---
+interface Props {
+  minimal?: boolean;
+}
+
+const { minimal = false } = Astro.props;
+---
+
+<footer class:list={['footer-shell relative z-20', minimal ? 'mt-0' : 'mt-16']}>
+  <div
+    class="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6"
+    style="padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right));"
+  >
+    <nav class="footer-site-nav" aria-label="页脚导航">
+      <a href="/">首页</a>
+      <span class="footer-site-nav__dot" aria-hidden="true">·</span>
+      <a href="/about/">关于本站</a>
+      <span class="footer-site-nav__dot" aria-hidden="true">·</span>
+      <a href="/tips/">戒烟小技巧</a>
+    </nav>
+    <p class="mt-5 text-center text-sm leading-relaxed text-theme-muted">
+      本站内容为健康科普，不能替代医生诊疗。紧急情况请拨打当地急救电话。
+    </p>
+    <p class="mt-2 text-center text-xs text-theme-faint">© {new Date().getFullYear()} 吸烟危害与戒烟科普</p>
+  </div>
+</footer>

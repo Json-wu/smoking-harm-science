@@ -1,0 +1,67 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CalmAmbience from '@/components/CalmAmbience.astro';
+import ArticleSidebar from '@/components/ArticleSidebar.astro';
+import MobileArticleBar from '@/components/MobileArticleBar.astro';
+import type { BlogPost } from '@/lib/posts';
+
+interface Props {
+  posts: BlogPost[];
+  currentSlug?: string;
+  title: string;
+  description: string;
+  markdownAlternate?: string;
+  /** 非文章页可传入，如 /tips/ */
+  canonicalPath?: string;
+  tipsActive?: boolean;
+  footerMinimal?: boolean;
+  ogType?: 'website' | 'article';
+  keywords?: string;
+  articlePublished?: string;
+  articleSection?: string;
+  jsonLd?: Record<string, unknown>[];
+}
+
+const {
+  posts,
+  currentSlug,
+  title,
+  description,
+  markdownAlternate,
+  canonicalPath,
+  tipsActive = false,
+  footerMinimal = true,
+  ogType = 'website',
+  keywords,
+  articlePublished,
+  articleSection,
+  jsonLd,
+} = Astro.props;
+const canonical = canonicalPath
+  ? new URL(canonicalPath, Astro.site).href
+  : new URL(`/blog/${currentSlug}/`, Astro.site).href;
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonical={canonical}
+  markdownAlternate={markdownAlternate}
+  footerMinimal={footerMinimal}
+  ogType={ogType}
+  keywords={keywords}
+  articlePublished={articlePublished}
+  articleSection={articleSection}
+  jsonLd={jsonLd}
+>
+  <CalmAmbience />
+  <div class="relative z-10 mx-auto w-full max-w-7xl">
+    <MobileArticleBar />
+    <div class="flex min-h-[calc(100dvh-var(--header-h))] flex-col lg:flex-row">
+      <ArticleSidebar posts={posts} currentSlug={currentSlug} tipsActive={tipsActive} />
+      <div class="reading-pane min-w-0 flex-1">
+        <slot />
+      </div>
+    </div>
+  </div>
+</BaseLayout>

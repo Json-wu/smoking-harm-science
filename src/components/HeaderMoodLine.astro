@@ -1,0 +1,53 @@
+---
+import { headerRotatingHints } from '@/lib/site';
+
+const first = headerRotatingHints[0];
+---
+
+<p
+  id="header-mood-line"
+  class="header-mood-line hidden shrink-0 whitespace-nowrap text-right text-xs text-theme-muted md:block"
+  aria-live="polite"
+  aria-atomic="true"
+>
+  {first}
+</p>
+
+<script>
+  import { headerRotatingHints } from '@/lib/site';
+
+  const INTERVAL_MS = 5000;
+  const FADE_MS = 220;
+
+  function initHeaderMoodLine() {
+    const el = document.getElementById('header-mood-line');
+    if (!el || el.dataset.bound === '1') return;
+    el.dataset.bound = '1';
+
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let index = 0;
+    let timer = 0;
+
+    const tick = () => {
+      el.classList.add('is-fading');
+      window.setTimeout(() => {
+        index = (index + 1) % headerRotatingHints.length;
+        el.textContent = headerRotatingHints[index];
+        el.classList.remove('is-fading');
+      }, FADE_MS);
+    };
+
+    timer = window.setInterval(tick, INTERVAL_MS);
+    window.addEventListener(
+      'pagehide',
+      () => {
+        window.clearInterval(timer);
+      },
+      { once: true },
+    );
+  }
+
+  initHeaderMoodLine();
+  document.addEventListener('astro:page-load', initHeaderMoodLine);
+</script>

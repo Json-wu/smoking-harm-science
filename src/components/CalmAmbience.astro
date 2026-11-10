@@ -1,0 +1,30 @@
+---
+/** 轻柔光晕与缓慢呼吸背景，减轻阅读焦虑；尊重 prefers-reduced-motion。 */
+---
+
+<div class="calm-layer pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
+  <div class="calm-spotlight"></div>
+  <div class="calm-orb calm-orb--mint"></div>
+  <div class="calm-orb calm-orb--sky"></div>
+</div>
+
+<script is:inline>
+  (function () {
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const root = document.documentElement;
+    if (!reduced) {
+      let raf = 0;
+      window.addEventListener(
+        'pointermove',
+        function (e) {
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(function () {
+            root.style.setProperty('--spot-x', e.clientX + 'px');
+            root.style.setProperty('--spot-y', e.clientY + 'px');
+          });
+        },
+        { passive: true },
+      );
+    }
+  })();
+</script>

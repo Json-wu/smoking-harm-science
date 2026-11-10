@@ -1,0 +1,124 @@
+---
+import BlogShell from '@/layouts/BlogShell.astro';
+import MiniProgramEntry from '@/components/MiniProgramEntry.astro';
+import { quitTips, tipsPageMeta } from '@/lib/quit-tips';
+import { miniProgram, miniProgramFeatures, miniProgramHabitBlurb } from '@/lib/site';
+import { getAllPosts, getPostSlug } from '@/lib/posts';
+import { buildBreadcrumbJsonLd, buildWebPageJsonLd, mergeJsonLd } from '@/lib/seo';
+
+const posts = await getAllPosts();
+const quitMethodPosts = posts.filter((p) => p.data.category === '戒烟方法').slice(0, 4);
+const jsonLd = mergeJsonLd(
+  buildWebPageJsonLd({
+    path: '/tips/',
+    name: tipsPageMeta.title,
+    description: tipsPageMeta.description,
+  }),
+  buildBreadcrumbJsonLd([
+    { name: '首页', path: '/' },
+    { name: tipsPageMeta.title, path: '/tips/' },
+  ]),
+);
+---
+
+<BlogShell
+  posts={posts}
+  title={tipsPageMeta.title}
+  description={tipsPageMeta.description}
+  canonicalPath="/tips/"
+  tipsActive
+  keywords="戒烟小技巧,烟瘾应对,复吸,戒烟冲动,我要戒烟"
+  jsonLd={jsonLd}
+>
+  <article
+    class="mx-auto max-w-3xl px-4 py-6 sm:px-8 sm:py-8 lg:py-10"
+    style="padding-left: max(1rem, env(safe-area-inset-left)); padding-right: max(1rem, env(safe-area-inset-right));"
+  >
+    <header class="mb-8 border-b border-theme pb-8">
+      <span class="badge-category">实用专栏</span>
+      <h1 class="mt-4 text-2xl font-bold tracking-tight text-theme sm:text-3xl">{tipsPageMeta.title}</h1>
+      <p class="mt-3 text-base leading-relaxed text-theme-secondary sm:text-lg">
+        这里汇总 **当下就能做** 的一两步应对。公共卫生资料普遍认为：对吸烟危害与戒烟方法了解越多，越有利于做出持续的戒烟决定；本站负责这部分科普阅读。冲动缓解之后，如需记录与自助界面，可自行打开微信「{miniProgram.name}」小程序（不能替代医生诊疗）。
+      </p>
+    </header>
+
+    <section aria-labelledby="tips-list-heading">
+      <h2 id="tips-list-heading" class="text-lg font-semibold text-theme">当下可以试试</h2>
+      <ul class="mt-5 space-y-4">
+        {
+          quitTips.map((tip) => (
+            <li id={tip.id} class="theme-card calm-card scroll-mt-24 p-5 !shadow-none">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-base font-semibold text-theme">{tip.title}</h3>
+                {tip.quick && (
+                  <span class="rounded-md bg-[var(--color-brand-subtle)] px-2 py-0.5 text-[11px] font-medium text-theme-brand">
+                    约 1 分钟
+                  </span>
+                )}
+              </div>
+              <p class="mt-2 text-sm leading-relaxed text-theme-secondary">{tip.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="mt-10 rounded-xl border border-theme p-6" style="background: var(--color-brand-subtle);" aria-labelledby="habit-heading">
+      <h2 id="habit-heading" class="text-lg font-semibold text-theme">科普之后：小程序里有哪些辅助功能？</h2>
+      <p class="mt-2 text-sm leading-relaxed text-theme-secondary">{miniProgramHabitBlurb}</p>
+      <p class="mt-3 text-sm text-theme-muted">
+        下列内容为「我要戒烟」小程序中常见的功能类型说明，实际菜单以小程序内为准；均未承诺戒烟成功率，不替代药物或门诊治疗。
+      </p>
+      <ul class="mt-4 space-y-3">
+        {
+          miniProgramFeatures.map((item) => (
+            <li class="theme-card rounded-lg p-4 !shadow-none" style="background: var(--color-surface-solid);">
+              <h3 class="text-sm font-semibold text-theme">{item.title}</h3>
+              <p class="mt-1 text-sm leading-relaxed text-theme-secondary">{item.description}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-6 flex w-full justify-center lg:justify-start">
+        <MiniProgramEntry variant="default" />
+      </div>
+    </section>
+
+    {
+      quitMethodPosts.length > 0 && (
+        <section class="mt-10 border-t border-theme pt-10" aria-labelledby="read-more-heading">
+          <h2 id="read-more-heading" class="text-lg font-semibold text-theme">
+            想深入方法？去读这些科普
+          </h2>
+          <ul class="mt-4 space-y-3">
+            {quitMethodPosts.map((post) => (
+              <li>
+                <a
+                  href={`/blog/${getPostSlug(post)}/`}
+                  class="calm-card theme-card block p-4 !shadow-none transition"
+                >
+                  <span class="text-sm font-medium text-theme hover:text-theme-brand">{post.data.title}</span>
+                  <p class="mt-1 text-xs text-theme-muted">{post.data.description}</p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <footer class="mt-10 border-t border-theme pt-8 text-sm text-theme-muted">
+      <h2 class="text-base font-semibold text-theme">参考与说明</h2>
+      <p class="mt-2 leading-relaxed">
+        技巧整理自公共卫生机构常见的简短戒烟干预与自助建议（延迟、改变情境、社会支持等），个体效果因人而异。
+      </p>
+      <ul class="mt-3 list-disc space-y-1 pl-5">
+        <li>
+          World Health Organization. Tobacco cessation brief advice materials.
+          https://www.who.int/teams/noncommunicable-diseases/tobacco/tobacco-cessation
+        </li>
+        <li>NHS. Coping with cravings. https://www.nhs.uk/live-well/quit-smoking/coping-with-cravings/</li>
+      </ul>
+    </footer>
+  </article>
+</BlogShell>
