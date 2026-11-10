@@ -38,7 +38,7 @@
       "url": "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=smoking+cessation&limit=15",
       "lang": "en",
       "defaultCategory": "戒烟方法",
-      "enabled": false
+      "enabled": true
     }
   ]
 }

@@ -48,6 +48,15 @@ export function slugifySafe(input, fallback) {
   return base || fallback;
 }
 
+/** 标题/正文须以简体中文为主（读者全中文） */
+export function isMostlyChinese(text, minChars = 8) {
+  const s = String(text || '').trim();
+  if (!s) return false;
+  const cjk = (s.match(/[\u4e00-\u9fff]/g) || []).length;
+  if (cjk < minChars) return false;
+  return cjk / s.length >= 0.2;
+}
+
 export function parseJsonFromModel(text) {
   const raw = String(text).trim();
   const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/);

@@ -11,6 +11,7 @@ import { buildReviewMessages, buildWriteMessages } from './prompts.mjs';
 import {
   fileExists,
   formatDate,
+  isMostlyChinese,
   matchesKeywords,
   parseJsonFromModel,
   slugifySafe,
@@ -115,6 +116,7 @@ async function main() {
       const pubDate = formatDate(item.isoDate || item.pubDate);
       const material = {
         sourceLabel: source.label,
+        sourceLang: source.lang === 'en' ? 'en' : 'zh',
         title,
         link,
         pubDate,
@@ -181,6 +183,26 @@ async function main() {
       const finalBody = String(review.bodyMarkdown || draft.bodyMarkdown || '').trim();
       if (!finalBody) {
         console.warn(`[crawl] 审核通过但正文为空，跳过 ${id}`);
+        continue;
+      }
+
+      if (!isMostlyChinese(finalTitle) || !isMostlyChinese(finalBody, 40)) {
+        console.warn(`[crawl] 未通过中文校验，跳过 ${id}`);
+        state.ingested[id] = {
+          status: 'rejected',
+          at: new Date().toISOString(),
+          source: source.id,
+          link,
+          reason: 'not_chinese',
+        };
+        rejected.items.push({
+          id,
+          at: new Date().toISOString(),
+          source: source.id,
+          title,
+          link,
+          issues: ['标题或正文非简体中文为主'],
+        });
         continue;
       }
 
