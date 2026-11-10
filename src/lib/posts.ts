@@ -32,7 +32,9 @@ export function getAdjacentPosts(
   };
 }
 
-/** 同分类优先，不足时用其它文章补足。 */
+const BLOG_CATEGORIES = ['吸烟危害', '戒烟方法', '烟草知识'] as const;
+
+/** 继续阅读：各推荐一篇，来自除当前分类外的另外两个分类（每类取最新一篇）。 */
 export function getRecommendedPosts(
   current: BlogPost,
   posts: BlogPost[],
@@ -40,9 +42,30 @@ export function getRecommendedPosts(
 ): BlogPost[] {
   const currentSlug = getPostSlug(current);
   const others = posts.filter((post) => getPostSlug(post) !== currentSlug);
-  const sameCategory = others.filter((post) => post.data.category === current.data.category);
-  const rest = others.filter((post) => post.data.category !== current.data.category);
-  return [...sameCategory, ...rest].slice(0, limit);
+  const otherCategories = BLOG_CATEGORIES.filter((c) => c !== current.data.category);
+
+  const picked: BlogPost[] = [];
+  const usedSlugs = new Set<string>();
+
+  for (const cat of otherCategories) {
+    const post = others.find((p) => p.data.category === cat);
+    if (post) {
+      picked.push(post);
+      usedSlugs.add(getPostSlug(post));
+    }
+  }
+
+  if (picked.length < limit) {
+    for (const post of others) {
+      if (picked.length >= limit) break;
+      const slug = getPostSlug(post);
+      if (usedSlugs.has(slug) || post.data.category === current.data.category) continue;
+      picked.push(post);
+      usedSlugs.add(slug);
+    }
+  }
+
+  return picked.slice(0, limit);
 }
 
 /** 从 frontmatter + 正文生成干净的 Markdown 副本（供 alternate 链接与 AI 收录）。 */

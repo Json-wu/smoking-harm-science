@@ -1,5 +1,14 @@
 {
   "version": 2,
-  "ingested": {},
-  "updatedAt": null
+  "ingested": {
+    "599c352c8de7114d": {
+      "slug": "auto-emotional-consumption-smoking-harm-599c352c",
+      "status": "published",
+      "at": "2026-11-10T10:57:37.365Z",
+      "source": "people-health",
+      "link": "http://health.people.com.cn/n1/2025/0605/c14739-40494406.html",
+      "reviewed": true
+    }
+  },
+  "updatedAt": "2026-11-10T10:57:37.365Z"
 }

@@ -1,4 +1,5 @@
 ---
+import { formatPubDateDots } from '@/lib/format-date';
 import type { BlogPost } from '@/lib/posts';
 import { getPostSlug } from '@/lib/posts';
 import TipsEntryLine from '@/components/TipsEntryLine.astro';
@@ -11,10 +12,6 @@ interface Props {
 }
 
 const { posts, currentSlug, tipsActive = false } = Astro.props;
-
-function formatDate(date: Date) {
-  return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
-}
 ---
 
 <div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
@@ -87,7 +84,7 @@ function formatDate(date: Date) {
                 <div class="flex items-center justify-between gap-2">
                   <span class="badge-category truncate !text-[11px]">{post.data.category}</span>
                   <time class="shrink-0 text-[11px] text-theme-faint" datetime={post.data.pubDate.toISOString()}>
-                    {formatDate(post.data.pubDate)}
+                    {formatPubDateDots(post.data.pubDate)}
                   </time>
                 </div>
                 <span class="mt-1.5 line-clamp-2 text-sm font-medium leading-snug text-theme">{post.data.title}</span>
@@ -121,8 +118,56 @@ function formatDate(date: Date) {
 </aside>
 
 <script>
+  const SIDEBAR_SCROLL_KEY = 'article-sidebar-scroll';
+
   function normalize(text) {
     return String(text).toLowerCase().trim();
+  }
+
+  function saveSidebarScroll() {
+    const el = document.getElementById('article-list');
+    if (!el) return;
+    try {
+      sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(el.scrollTop));
+    } catch {
+      /* private mode */
+    }
+  }
+
+  function restoreSidebarScroll() {
+    const el = document.getElementById('article-list');
+    if (!el) return;
+    try {
+      const raw = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+      if (raw == null) return;
+      const y = Number(raw);
+      if (!Number.isFinite(y) || y < 0) return;
+      el.scrollTop = y;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  function initSidebarScrollPersistence() {
+    const el = document.getElementById('article-list');
+    if (!el || el.dataset.scrollPersist === '1') return;
+    el.dataset.scrollPersist = '1';
+
+    let scrollTimer = 0;
+    el.addEventListener(
+      'scroll',
+      () => {
+        window.clearTimeout(scrollTimer);
+        scrollTimer = window.setTimeout(saveSidebarScroll, 100);
+      },
+      { passive: true },
+    );
+
+    el.querySelectorAll('a[href^="/blog/"]').forEach((link) => {
+      if (link.dataset.scrollSave === '1') return;
+      link.dataset.scrollSave = '1';
+      link.addEventListener('click', saveSidebarScroll);
+    });
   }
 
   function initArticleSidebarSearch() {
@@ -186,6 +231,13 @@ function formatDate(date: Date) {
     applyFilter();
   }
 
-  initArticleSidebarSearch();
-  document.addEventListener('astro:page-load', initArticleSidebarSearch);
+  function initArticleSidebar() {
+    initSidebarScrollPersistence();
+    initArticleSidebarSearch();
+    restoreSidebarScroll();
+    requestAnimationFrame(restoreSidebarScroll);
+  }
+
+  initArticleSidebar();
+  document.addEventListener('astro:page-load', initArticleSidebar);
 </script>

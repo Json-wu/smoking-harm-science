@@ -12,7 +12,7 @@
 | 环境 | 配置 |
 |------|------|
 | GitHub Actions（定时/手动） | 仓库 **Secrets** → `DEEPSEEK_API_KEY`（必选，否则 workflow 失败） |
-| 本地试跑 | `export DEEPSEEK_API_KEY=...` 或 `set -a && source .env && set +a` 后 `npm run crawl` |
+| 本地试跑 | 根目录 `.env` 填写 `DEEPSEEK_API_KEY`（`npm run crawl` 自动加载），或 `export` 后运行 |
 
 可选：`DEEPSEEK_API_BASE`（默认 `https://api.deepseek.com`）
 

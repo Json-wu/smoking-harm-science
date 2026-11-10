@@ -37,7 +37,8 @@
   --shadow-card-hover: 0 0 0 1px rgba(45, 212, 191, 0.18), 0 16px 40px -12px rgba(13, 148, 136, 0.22);
   --shadow-active-item: 0 0 0 1px rgba(45, 212, 191, 0.28), 0 8px 24px -8px rgba(13, 148, 136, 0.28);
 
-  --calm-spot: rgba(45, 212, 191, 0.16);
+  --calm-spot: rgba(45, 212, 191, 0.3);
+  --calm-spot-mid: rgba(45, 212, 191, 0.14);
   --calm-orb-mint: rgba(110, 231, 183, 0.38);
   --calm-orb-sky: rgba(147, 197, 253, 0.32);
 
@@ -69,7 +70,8 @@
   --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -8px rgba(13, 148, 136, 0.12);
   --shadow-card-hover: 0 0 0 1px rgba(45, 212, 191, 0.18), 0 16px 40px -12px rgba(13, 148, 136, 0.22);
   --shadow-active-item: 0 0 0 1px rgba(45, 212, 191, 0.28), 0 8px 24px -8px rgba(13, 148, 136, 0.28);
-  --calm-spot: rgba(45, 212, 191, 0.16);
+  --calm-spot: rgba(45, 212, 191, 0.3);
+  --calm-spot-mid: rgba(45, 212, 191, 0.14);
   --calm-orb-mint: rgba(110, 231, 183, 0.38);
   --calm-orb-sky: rgba(147, 197, 253, 0.32);
 }
@@ -98,7 +100,8 @@
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px -10px rgba(0, 0, 0, 0.45);
   --shadow-card-hover: 0 0 0 1px rgba(45, 212, 191, 0.22), 0 16px 36px -12px rgba(0, 0, 0, 0.55);
   --shadow-active-item: 0 0 0 1px rgba(45, 212, 191, 0.35), 0 8px 22px -8px rgba(13, 148, 136, 0.35);
-  --calm-spot: rgba(45, 212, 191, 0.08);
+  --calm-spot: rgba(45, 212, 191, 0.18);
+  --calm-spot-mid: rgba(45, 212, 191, 0.08);
   --calm-orb-mint: rgba(13, 148, 136, 0.22);
   --calm-orb-sky: rgba(30, 58, 138, 0.2);
 }
@@ -134,7 +137,8 @@
     --shadow-card-hover: 0 0 0 1px rgba(45, 212, 191, 0.22), 0 16px 36px -12px rgba(0, 0, 0, 0.55);
     --shadow-active-item: 0 0 0 1px rgba(45, 212, 191, 0.35), 0 8px 22px -8px rgba(13, 148, 136, 0.35);
 
-    --calm-spot: rgba(45, 212, 191, 0.08);
+    --calm-spot: rgba(45, 212, 191, 0.18);
+    --calm-spot-mid: rgba(45, 212, 191, 0.08);
     --calm-orb-mint: rgba(13, 148, 136, 0.22);
     --calm-orb-sky: rgba(30, 58, 138, 0.2);
   }
@@ -238,9 +242,26 @@
     color: var(--color-text-secondary);
   }
 
-  .prose-blog h2 {
-    @apply mb-4 mt-10 text-2xl font-semibold;
+  /* 开篇结论段（博客首段） */
+  .prose-blog > p:first-child {
+    @apply mb-8 rounded-xl px-4 py-3.5 leading-[1.8] sm:px-5 sm:py-4;
+    background: var(--color-brand-subtle);
+    border-left: 3px solid var(--color-brand);
     color: var(--color-text);
+  }
+
+  .prose-blog h2 {
+    @apply mb-4 pb-1 text-2xl font-semibold;
+    margin-top: 2.25rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .prose-blog header + h2 {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
   }
 
   .prose-blog h3 {
@@ -249,12 +270,12 @@
   }
 
   .prose-blog p {
-    @apply mb-5;
+    @apply mb-6;
   }
 
   .prose-blog ul,
   .prose-blog ol {
-    @apply mb-5 list-outside pl-6;
+    @apply mb-7 list-outside pl-6;
   }
 
   .prose-blog ul {
@@ -266,7 +287,19 @@
   }
 
   .prose-blog li {
-    @apply mb-2;
+    @apply mb-2.5;
+  }
+
+  .prose-blog hr {
+    @apply my-10 border-0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--color-border) 90%, transparent) 20%,
+      color-mix(in srgb, var(--color-border) 90%, transparent) 80%,
+      transparent
+    );
   }
 
   .prose-blog a {
@@ -311,13 +344,18 @@
     position: fixed;
     left: 0;
     top: 0;
-    width: 36rem;
-    height: 36rem;
-    margin-left: -18rem;
-    margin-top: -18rem;
+    width: 32rem;
+    height: 32rem;
+    margin-left: -16rem;
+    margin-top: -16rem;
     transform: translate(var(--spot-x), var(--spot-y));
-    background: radial-gradient(circle, var(--calm-spot) 0%, transparent 70%);
-    transition: transform 0.4s ease-out;
+    background: radial-gradient(
+      circle,
+      var(--calm-spot) 0%,
+      var(--calm-spot-mid) 38%,
+      transparent 72%
+    );
+    transition: transform 0.35s ease-out;
     will-change: transform;
   }
 
@@ -396,13 +434,46 @@
   }
 
   .sidebar-list-link {
-    @apply calm-card block rounded-xl border px-3 py-3 transition;
+    @apply calm-card block rounded-xl border px-3 py-3;
     border-color: transparent;
+    transition:
+      border-color 0.15s ease,
+      background 0.15s ease,
+      box-shadow 0.2s ease,
+      transform 0.15s ease;
   }
 
-  .sidebar-list-link:hover {
-    border-color: var(--color-border);
-    background: var(--color-surface-muted);
+  @media (hover: hover) {
+    .sidebar-list-link:hover {
+      border-color: color-mix(in srgb, var(--color-brand) 52%, var(--color-border));
+      background: color-mix(in srgb, var(--color-brand-subtle) 88%, var(--color-surface-muted));
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .article-list-item:not(.is-active) .sidebar-list-link:hover .font-medium {
+      color: var(--color-brand-text-strong);
+    }
+
+    .article-list-item.is-active .sidebar-list-link:hover {
+      border-color: color-mix(in srgb, var(--color-brand) 58%, transparent) !important;
+      background: color-mix(in srgb, var(--color-brand-subtle) 95%, var(--color-surface-muted)) !important;
+    }
+
+    a.calm-card.theme-card.block:hover {
+      border-color: color-mix(in srgb, var(--color-brand) 42%, var(--color-border));
+      background: color-mix(in srgb, var(--color-brand-subtle) 65%, var(--color-surface-solid));
+    }
+
+    a.calm-card.theme-card.block:hover .font-semibold,
+    a.calm-card.theme-card.block:hover .font-medium {
+      color: var(--color-brand-text);
+    }
+  }
+
+  .sidebar-list-link:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
+    box-shadow: 0 0 0 3px var(--color-brand-subtle);
   }
 
   .sidebar-panel {

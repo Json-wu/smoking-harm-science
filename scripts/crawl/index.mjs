@@ -2,7 +2,9 @@
 /**
  * RSS → DeepSeek 写稿 → DeepSeek 审核 → 通过后写入 src/content/blog/auto-*.md
  */
+import { existsSync } from 'node:fs';
 import { appendFile, readFile, writeFile } from 'node:fs/promises';
+import { loadEnvFile } from 'node:process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Parser from 'rss-parser';
@@ -22,6 +24,16 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
+
+const ENV_PATH = path.join(ROOT, '.env');
+if (existsSync(ENV_PATH)) {
+  try {
+    loadEnvFile(ENV_PATH);
+  } catch (err) {
+    console.warn('[crawl] 读取 .env 失败：', err.message);
+  }
+}
+
 const CONFIG_PATH = path.join(ROOT, 'config/crawl-sources.json');
 const STATE_PATH = path.join(ROOT, 'data/crawl-state.json');
 const REJECTED_PATH = path.join(ROOT, 'data/crawl-rejected.json');
@@ -37,7 +49,9 @@ const parser = new Parser({
 function requireApiKey() {
   const key = process.env.DEEPSEEK_API_KEY?.trim();
   if (!key) {
-    console.error('[crawl] 需要环境变量 DEEPSEEK_API_KEY。本地可复制 .env.example 为 .env 后 export。');
+    console.error(
+      '[crawl] 需要 DEEPSEEK_API_KEY：在项目根目录 .env 填写，或执行 export DEEPSEEK_API_KEY=...',
+    );
     process.exit(1);
   }
   return key;
