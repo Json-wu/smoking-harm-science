@@ -42,7 +42,7 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 | 命令 / 工作流 | 作用 |
 |---------------|------|
 | `npm run crawl` | 中文/英文 RSS → DeepSeek 写稿 + 审核 → `auto-*.md`（需 `DEEPSEEK_API_KEY`） |
-| `.github/workflows/crawl.yml` | **每周一 09:30（北京时间）** 定时写稿；支持手动触发；有新稿则自动 commit → 触发部署 |
+| `.github/workflows/crawl.yml` | **每周二/四/六 09:30（北京时间）** 各最多 1 篇；无新素材则不写稿不提交；有新稿才 commit 并部署 |
 | `.github/workflows/deploy.yml` | `main` 推送后构建并部署 |
 
 **部署（二选一）**
@@ -52,7 +52,7 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 
 在 GitHub **Settings → Secrets** 配置 `DEEPSEEK_API_KEY`。国外 RSS 成稿也须为**简体中文**（DeepSeek 写稿+审核+脚本校验）。抓取状态见 `data/crawl-state.json`，未通过见 `data/crawl-rejected.json`。
 
-**定时抓取前提**：在仓库 **Settings → Secrets** 配置 `DEEPSEEK_API_KEY`（Actions 未配置则定时任务会失败）。单次最多新发 `maxNewPerRun` 篇（默认 2，见 `config/crawl-sources.json`）。本地试跑仍可用 `npm run crawl`，自行 commit。
+**定时抓取前提**：在仓库 **Settings → Secrets** 配置 `DEEPSEEK_API_KEY`。单次最多 **1** 篇（`maxNewPerRun`）。RSS 无新条目时不调用写稿、不提交；仅审核未过时可能只更新 `crawl-state.json`（不发布新文章）。
 
 ## SEO / GEO
 

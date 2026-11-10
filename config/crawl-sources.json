@@ -1,5 +1,5 @@
 {
-  "maxNewPerRun": 2,
+  "maxNewPerRun": 1,
   "keywordPatternZh": "烟草|吸烟|戒烟|尼古丁|二手|电子烟|控烟|无烟|卷烟|加热烟草|税",
   "keywordPatternEn": "\\btobacco\\b|\\bsmoking\\b|\\bcigarette\\b|\\bnicotine\\b|\\bvape\\b|\\bcessation\\b|\\bquitting\\b|\\bFCTC\\b|Framework Convention on Tobacco|tobacco control",
   "deepseek": {

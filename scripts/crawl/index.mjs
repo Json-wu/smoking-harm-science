@@ -2,7 +2,7 @@
 /**
  * RSS → DeepSeek 写稿 → DeepSeek 审核 → 通过后写入 src/content/blog/auto-*.md
  */
-import { readFile, writeFile } from 'node:fs/promises';
+import { appendFile, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Parser from 'rss-parser';
@@ -55,6 +55,15 @@ async function loadJson(filePath, fallback) {
   }
 }
 
+async function emitGithubStepOutput(created, processed, stateDirtyFlag = false) {
+  const out = process.env.GITHUB_OUTPUT;
+  if (!out) return;
+  await appendFile(
+    out,
+    `created=${created}\nprocessed=${processed}\npublished=${created > 0 ? 1 : 0}\nstate_dirty=${stateDirtyFlag ? 1 : 0}\n`,
+  );
+}
+
 async function writePostFile({ slug, title, description, pubDate, category, tags, body }) {
   const tagsYaml = (tags || []).map((t) => `  - ${JSON.stringify(String(t))}`).join('\n');
   const frontmatter = `---
@@ -82,7 +91,9 @@ async function main() {
   const pauseMs = config.deepseek?.pauseMsBetweenCalls ?? 1200;
 
   let created = 0;
-  const cap = config.maxNewPerRun ?? 2;
+  let processed = 0;
+  let stateDirty = false;
+  const cap = config.maxNewPerRun ?? 1;
 
   for (const source of config.sources) {
     if (!source.enabled) continue;
@@ -124,6 +135,7 @@ async function main() {
         suggestedCategory: source.defaultCategory,
       };
 
+      processed += 1;
       console.log(`[crawl] 写稿 ${source.id}: ${title.slice(0, 60)}…`);
 
       let draft;
@@ -165,6 +177,7 @@ async function main() {
           source: source.id,
           link,
         };
+        stateDirty = true;
         rejected.items.push({
           id,
           at: new Date().toISOString(),
@@ -195,6 +208,7 @@ async function main() {
           link,
           reason: 'not_chinese',
         };
+        stateDirty = true;
         rejected.items.push({
           id,
           at: new Date().toISOString(),
@@ -211,6 +225,7 @@ async function main() {
 
       if (await fileExists(path.join(BLOG_DIR, `${slug}.md`))) {
         state.ingested[id] = { slug, status: 'published', at: new Date().toISOString(), source: source.id, link };
+        stateDirty = true;
         continue;
       }
 
@@ -234,16 +249,31 @@ async function main() {
         link,
         reviewed: true,
       };
+      stateDirty = true;
       created += 1;
       console.log(`[crawl] 已发布 ${slug}.md ← ${source.id}`);
     }
   }
 
-  state.version = 2;
-  state.updatedAt = new Date().toISOString();
-  await writeFile(STATE_PATH, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
-  await writeFile(REJECTED_PATH, `${JSON.stringify(rejected, null, 2)}\n`, 'utf8');
-  console.log(`[crawl] 完成，本次新发布 ${created} 篇。`);
+  if (processed === 0) {
+    console.log('[crawl] 无新可处理条目，未调用写稿，未生成文章。');
+    await emitGithubStepOutput(0, 0);
+    return;
+  }
+
+  if (stateDirty) {
+    state.version = 2;
+    state.updatedAt = new Date().toISOString();
+    await writeFile(STATE_PATH, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+    await writeFile(REJECTED_PATH, `${JSON.stringify(rejected, null, 2)}\n`, 'utf8');
+  }
+
+  if (created === 0) {
+    console.log('[crawl] 本次已处理素材但未生成新文章（未通过审核或已达上限前失败）。');
+  } else {
+    console.log(`[crawl] 完成，本次新发布 ${created} 篇。`);
+  }
+  await emitGithubStepOutput(created, processed, stateDirty);
 }
 
 main().catch((err) => {

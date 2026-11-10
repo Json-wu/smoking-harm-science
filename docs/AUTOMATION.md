@@ -20,12 +20,12 @@
 
 | 触发 | 说明 |
 |------|------|
-| `schedule` | 每周一 **01:30 UTC**（北京时间 **09:30**） |
+| `schedule` | 每周**二、四、六** **01:30 UTC**（北京时间 **09:30**） |
 | `workflow_dispatch` | Actions 页手动「Run workflow」 |
 
-流程：`npm run crawl` → 若有新 `auto-*.md` 或状态文件变更 → **自动 commit 到 `main`** → `deploy.yml` 构建部署。
+流程：`npm run crawl`（每次最多 **1** 篇）→ 无新 RSS 素材则**不写稿、不写库、不 commit** → 有新稿则 commit `auto-*.md` 并部署 → 仅审核未过审时可能只提交状态 JSON（不生成文章）。
 
-单次新发上限：`config/crawl-sources.json` 的 `maxNewPerRun`（默认 2，控制 API 费用）。
+单次新发上限：`maxNewPerRun` = **1**。
 
 每次运行另上传 **Artifact**（14 天保留），便于核对未过审记录。
 
