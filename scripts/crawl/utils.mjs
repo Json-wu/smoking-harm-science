@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { access } from 'node:fs/promises';
+import { access, readdir } from 'node:fs/promises';
 
 export function stableId(item, sourceId) {
   const raw = item.guid || item.id || item.link || `${sourceId}:${item.title}`;
@@ -37,6 +37,19 @@ export async function fileExists(filePath) {
   } catch {
     return false;
   }
+}
+
+/** 同一 RSS 条目的 slug 后缀为 stableId 前 8 位，避免审核每次改 slugHint 重复建站 */
+export async function findAutoPostSlugForSourceId(blogDir, sourceId16) {
+  const suffix = `-${sourceId16.slice(0, 8)}.md`;
+  let names;
+  try {
+    names = await readdir(blogDir);
+  } catch {
+    return null;
+  }
+  const hit = names.find((name) => name.startsWith('auto-') && name.endsWith(suffix));
+  return hit ? hit.replace(/\.mdx?$/, '') : null;
 }
 
 export function slugifySafe(input, fallback) {

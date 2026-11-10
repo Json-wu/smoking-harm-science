@@ -35,6 +35,14 @@
 
 未过审记录见 Artifact 或 `data/crawl-rejected.json`。
 
+### 为何连续两次 crawl 日志很像、还像写了同一篇？
+
+1. **人民网 RSS 列表顺序固定**，且 WHO 等源里多数条目已在 `crawl-state.json` 去重，于是一轮里仍会先尝试同几条「边缘健康稿」（常审核不通过），最后才轮到同一篇「无烟日/戒烟」稿通过。
+2. **未把 `crawl-state.json` 推回仓库**（或旧 workflow 只在新稿时才 commit）时，**未过审条目不会记下**，下次又会对同一条 RSS **重复写稿+审核**。
+3. **同一 RSS 的 `slugHint` 每次会变**（模型随机），过去可能写出两篇后缀相同 id、文件名不同的 `auto-*-cd30dd8a.md`；现改为按 `stableId` 后缀识别已有文件，**不再重复生成**。
+
+每次跑完应确保 **commit 含 `data/crawl-state.json`**（当前 workflow 在有任何 crawl 变更时都会提交）。
+
 单次新发上限：`maxNewPerRun` = **1**。
 
 每次运行另上传 **Artifact**（14 天保留），便于核对未过审记录。

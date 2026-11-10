@@ -21,7 +21,8 @@
       "label": "人民网健康频道",
       "url": "http://www.people.com.cn/rss/health.xml",
       "lang": "zh",
-      "defaultCategory": "吸烟危害",
+      "defaultCategory": "戒烟方法",
+      "keywordPattern": "戒烟|控烟|无烟|吸烟|烟草|尼古丁|电子烟|世界无烟日|戒烟门诊",
       "enabled": true
     },
     {

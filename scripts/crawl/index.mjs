@@ -12,6 +12,7 @@ import { deepseekChat, sleep } from './deepseek-client.mjs';
 import { buildReviewMessages, buildWriteMessages } from './prompts.mjs';
 import {
   fileExists,
+  findAutoPostSlugForSourceId,
   formatDate,
   isMostlyChinese,
   matchesKeywords,
@@ -140,7 +141,8 @@ async function main() {
     }
 
     const keywordPattern =
-      source.lang === 'zh' ? config.keywordPatternZh : config.keywordPatternEn || config.keywordPatternZh;
+      source.keywordPattern ??
+      (source.lang === 'zh' ? config.keywordPatternZh : config.keywordPatternEn || config.keywordPatternZh);
 
     for (const item of feed.items ?? []) {
       if (created >= cap) break;
@@ -154,7 +156,26 @@ async function main() {
       if (!matchesKeywords(blob, keywordPattern)) continue;
 
       const id = stableId(item, source.id);
-      if (state.ingested[id]) continue;
+      if (state.ingested[id]) {
+        console.log(
+          `[crawl] 已收录（${state.ingested[id].status || 'done'}），跳过: ${title.slice(0, 48)}…`,
+        );
+        continue;
+      }
+
+      const existingSlug = await findAutoPostSlugForSourceId(BLOG_DIR, id);
+      if (existingSlug) {
+        state.ingested[id] = {
+          slug: existingSlug,
+          status: 'published',
+          at: new Date().toISOString(),
+          source: source.id,
+          link,
+        };
+        stateDirty = true;
+        console.log(`[crawl] 已有稿件 ${existingSlug}.md，跳过写稿`);
+        continue;
+      }
 
       const pubDate = formatDate(item.isoDate || item.pubDate);
       const material = {
@@ -252,12 +273,17 @@ async function main() {
         continue;
       }
 
-      const slugHint = slugifySafe(review.slugHint || draft.slugHint, '');
-      const slug = slugHint ? `auto-${slugHint}-${id.slice(0, 8)}` : `auto-${id}`;
+      const idSuffix = id.slice(0, 8);
+      let slug = await findAutoPostSlugForSourceId(BLOG_DIR, id);
+      if (!slug) {
+        const slugHint = slugifySafe(review.slugHint || draft.slugHint, 'post');
+        slug = slugHint ? `auto-${slugHint}-${idSuffix}` : `auto-${idSuffix}`;
+      }
 
       if (await fileExists(path.join(BLOG_DIR, `${slug}.md`))) {
         state.ingested[id] = { slug, status: 'published', at: new Date().toISOString(), source: source.id, link };
         stateDirty = true;
+        console.log(`[crawl] 文件已存在 ${slug}.md，跳过写入`);
         continue;
       }
 
@@ -287,12 +313,6 @@ async function main() {
     }
   }
 
-  if (processed === 0) {
-    console.log('[crawl] 无新可处理条目，未调用写稿，未生成文章。');
-    await finishRun({ created: 0, processed: 0, stateDirty: false });
-    return;
-  }
-
   if (stateDirty) {
     state.version = 2;
     state.updatedAt = new Date().toISOString();
@@ -300,7 +320,9 @@ async function main() {
     await writeFile(REJECTED_PATH, `${JSON.stringify(rejected, null, 2)}\n`, 'utf8');
   }
 
-  if (created === 0) {
+  if (processed === 0 && created === 0) {
+    console.log('[crawl] 无新可处理条目，未调用写稿，未生成文章。');
+  } else if (created === 0) {
     console.log('[crawl] 本次已处理素材但未生成新文章（未通过审核或已达上限前失败）。');
   } else {
     console.log(`[crawl] 完成，本次新发布 ${created} 篇。`);
