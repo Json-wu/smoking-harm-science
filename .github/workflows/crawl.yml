@@ -28,13 +28,16 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Fetch RSS and write brief posts
+      - name: RSS → DeepSeek write → review
         run: npm run crawl
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
 
       - name: Commit crawl results
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'chore(crawl): ingest RSS brief articles'
+          commit_message: 'chore(crawl): publish reviewed auto articles'
           file_pattern: |
-            src/content/blog/brief-*.md
+            src/content/blog/auto-*.md
             data/crawl-state.json
+            data/crawl-rejected.json

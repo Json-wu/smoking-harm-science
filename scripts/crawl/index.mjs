@@ -1,96 +1,87 @@
 #!/usr/bin/env node
 /**
- * 从 config/crawl-sources.json 中的 RSS 拉取与烟草/戒烟相关的公开资讯，
- * 生成 brief-* 摘要稿至 src/content/blog/（dedupe 见 data/crawl-state.json）。
+ * RSS → DeepSeek 写稿 → DeepSeek 审核 → 通过后写入 src/content/blog/auto-*.md
  */
-import { createHash } from 'node:crypto';
-import { readFile, writeFile, access } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Parser from 'rss-parser';
+import { deepseekChat, sleep } from './deepseek-client.mjs';
+import { buildReviewMessages, buildWriteMessages } from './prompts.mjs';
+import {
+  fileExists,
+  formatDate,
+  matchesKeywords,
+  parseJsonFromModel,
+  slugifySafe,
+  stableId,
+  stripHtml,
+  yamlString,
+} from './utils.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '../..');
 const CONFIG_PATH = path.join(ROOT, 'config/crawl-sources.json');
 const STATE_PATH = path.join(ROOT, 'data/crawl-state.json');
+const REJECTED_PATH = path.join(ROOT, 'data/crawl-rejected.json');
 const BLOG_DIR = path.join(ROOT, 'src/content/blog');
+
+const VALID_CATEGORIES = new Set(['吸烟危害', '戒烟方法', '烟草知识']);
 
 const parser = new Parser({
   timeout: 30_000,
-  headers: { 'User-Agent': 'smoking-harm-science-crawl/1.0 (+https://quitsmoking.aivelo.net)' },
+  headers: { 'User-Agent': 'smoking-harm-science-crawl/2.0 (+https://quitsmoking.aivelo.net)' },
 });
 
-function stableId(item, sourceId) {
-  const raw = item.guid || item.id || item.link || `${sourceId}:${item.title}`;
-  return createHash('sha256').update(String(raw)).digest('hex').slice(0, 16);
+function requireApiKey() {
+  const key = process.env.DEEPSEEK_API_KEY?.trim();
+  if (!key) {
+    console.error('[crawl] 需要环境变量 DEEPSEEK_API_KEY。本地可复制 .env.example 为 .env 后 export。');
+    process.exit(1);
+  }
+  return key;
 }
 
-function matchesKeywords(text, pattern) {
-  if (!pattern) return true;
-  const re = new RegExp(pattern, 'i');
-  return re.test(text);
+function normalizeCategory(value, fallback) {
+  return VALID_CATEGORIES.has(value) ? value : fallback;
 }
 
-function stripHtml(html) {
-  if (!html) return '';
-  return String(html)
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function yamlString(value) {
-  return JSON.stringify(String(value ?? '').trim());
-}
-
-function formatDate(input) {
-  const d = input ? new Date(input) : new Date();
-  if (Number.isNaN(d.getTime())) return new Date().toISOString().slice(0, 10);
-  return d.toISOString().slice(0, 10);
-}
-
-function buildMarkdown({ title, description, link, sourceLabel, pubDate }) {
-  const excerpt = description || '暂无摘要，请访问原始来源阅读全文。';
-  return `> 本文由定时任务从公开 RSS 收录，仅供科普导航；结论与数据请以原始来源为准。
-
-**结论：** 以下为「${sourceLabel}」渠道的公开资讯摘要，便于追踪吸烟危害、烟草政策与戒烟研究动态；本站不对第三方页面内容作医学背书。
-
-## 资讯摘要
-
-${excerpt}
-
-## 原始来源
-
-1. ${title}. ${link}
-
-## 实用建议
-
-- 将摘要当作线索，阅读原文并核对发表机构、时间与研究设计。
-- 若涉及个人戒烟或用药，请结合本地戒烟门诊与说明书，勿仅凭新闻标题做决定。
-- 可将原文链接保存，便于与站内其它科普文章对照阅读。
-
-## 参考文献与来源
-
-1. ${sourceLabel}. ${title}. ${link}（访问日期：${pubDate}）
-`;
-}
-
-async function fileExists(filePath) {
+async function loadJson(filePath, fallback) {
   try {
-    await access(filePath);
-    return true;
+    return JSON.parse(await readFile(filePath, 'utf8'));
   } catch {
-    return false;
+    return fallback;
   }
 }
 
+async function writePostFile({ slug, title, description, pubDate, category, tags, body }) {
+  const tagsYaml = (tags || []).map((t) => `  - ${JSON.stringify(String(t))}`).join('\n');
+  const frontmatter = `---
+title: ${yamlString(title)}
+description: ${yamlString(description)}
+pubDate: ${pubDate}
+category: ${yamlString(category)}
+tags:
+${tagsYaml}
+---
+
+`;
+  await writeFile(path.join(BLOG_DIR, `${slug}.md`), frontmatter + body.trim() + '\n', 'utf8');
+}
+
 async function main() {
+  const apiKey = requireApiKey();
   const config = JSON.parse(await readFile(CONFIG_PATH, 'utf8'));
-  const state = JSON.parse(await readFile(STATE_PATH, 'utf8'));
+  const state = await loadJson(STATE_PATH, { version: 2, ingested: {} });
+  const rejected = await loadJson(REJECTED_PATH, { items: [] });
   if (!state.ingested) state.ingested = {};
 
+  const writeModel = config.deepseek?.writeModel || 'deepseek-chat';
+  const reviewModel = config.deepseek?.reviewModel || 'deepseek-chat';
+  const pauseMs = config.deepseek?.pauseMsBetweenCalls ?? 1200;
+
   let created = 0;
-  const cap = config.maxNewPerRun ?? 5;
+  const cap = config.maxNewPerRun ?? 2;
 
   for (const source of config.sources) {
     if (!source.enabled) continue;
@@ -104,6 +95,9 @@ async function main() {
       continue;
     }
 
+    const keywordPattern =
+      source.lang === 'zh' ? config.keywordPatternZh : config.keywordPatternEn || config.keywordPatternZh;
+
     for (const item of feed.items ?? []) {
       if (created >= cap) break;
 
@@ -111,56 +105,123 @@ async function main() {
       const link = (item.link || '').trim();
       if (!title || !link) continue;
 
-      const blob = `${title} ${stripHtml(item.contentSnippet || item.content || item.summary || '')}`;
-      if (!matchesKeywords(blob, config.keywordPattern)) continue;
+      const excerpt = stripHtml(item.contentSnippet || item.summary || item.content || title).slice(0, 4000);
+      const blob = `${title} ${excerpt}`;
+      if (!matchesKeywords(blob, keywordPattern)) continue;
 
       const id = stableId(item, source.id);
       if (state.ingested[id]) continue;
 
-      const slug = `brief-${id}`;
-      const filePath = path.join(BLOG_DIR, `${slug}.md`);
-      if (await fileExists(filePath)) {
-        state.ingested[id] = { slug, at: new Date().toISOString() };
+      const pubDate = formatDate(item.isoDate || item.pubDate);
+      const material = {
+        sourceLabel: source.label,
+        title,
+        link,
+        pubDate,
+        excerpt,
+        suggestedCategory: source.defaultCategory,
+      };
+
+      console.log(`[crawl] 写稿 ${source.id}: ${title.slice(0, 60)}…`);
+
+      let draft;
+      try {
+        const writeRaw = await deepseekChat({
+          apiKey,
+          model: writeModel,
+          messages: buildWriteMessages(material),
+        });
+        draft = parseJsonFromModel(writeRaw);
+      } catch (err) {
+        console.error(`[crawl] 写稿失败 ${id}:`, err.message);
         continue;
       }
 
-      const description = stripHtml(item.contentSnippet || item.summary || item.content || title).slice(
-        0,
-        280,
-      );
-      const pubDate = formatDate(item.isoDate || item.pubDate);
-      const body = buildMarkdown({
-        title,
-        description,
-        link,
-        sourceLabel: source.label,
+      await sleep(pauseMs);
+
+      let review;
+      try {
+        const reviewRaw = await deepseekChat({
+          apiKey,
+          model: reviewModel,
+          messages: buildReviewMessages(material, draft),
+        });
+        review = parseJsonFromModel(reviewRaw);
+      } catch (err) {
+        console.error(`[crawl] 审核失败 ${id}:`, err.message);
+        continue;
+      }
+
+      await sleep(pauseMs);
+
+      const approved = Boolean(review.approved);
+      if (!approved) {
+        console.warn(`[crawl] 未通过审核 ${id}:`, (review.issues || []).join('；') || '无详情');
+        state.ingested[id] = {
+          status: 'rejected',
+          at: new Date().toISOString(),
+          source: source.id,
+          link,
+        };
+        rejected.items.push({
+          id,
+          at: new Date().toISOString(),
+          source: source.id,
+          title,
+          link,
+          issues: review.issues || [],
+        });
+        continue;
+      }
+
+      const finalTitle = String(review.title || draft.title || title).slice(0, 80);
+      const finalDescription = String(review.description || draft.description || excerpt).slice(0, 160);
+      const finalCategory = normalizeCategory(review.category || draft.category, source.defaultCategory);
+      const finalTags = Array.isArray(review.tags) ? review.tags : draft.tags;
+      const finalBody = String(review.bodyMarkdown || draft.bodyMarkdown || '').trim();
+      if (!finalBody) {
+        console.warn(`[crawl] 审核通过但正文为空，跳过 ${id}`);
+        continue;
+      }
+
+      const slugHint = slugifySafe(review.slugHint || draft.slugHint, '');
+      const slug = slugHint ? `auto-${slugHint}-${id.slice(0, 8)}` : `auto-${id}`;
+
+      if (await fileExists(path.join(BLOG_DIR, `${slug}.md`))) {
+        state.ingested[id] = { slug, status: 'published', at: new Date().toISOString(), source: source.id, link };
+        continue;
+      }
+
+      const tags = [...new Set([...(finalTags || []), '自动写稿', source.label])].slice(0, 8);
+
+      await writePostFile({
+        slug,
+        title: finalTitle,
+        description: finalDescription,
         pubDate,
+        category: finalCategory,
+        tags,
+        body: finalBody,
       });
 
-      const tagList = ['资讯摘要', '自动收录', source.label];
-      const tagsYaml = tagList.map((t) => `  - ${JSON.stringify(t)}`).join('\n');
-
-      const frontmatter = `---
-title: ${yamlString(title)}
-description: ${yamlString(description)}
-pubDate: ${pubDate}
-category: ${yamlString(source.defaultCategory)}
-tags:
-${tagsYaml}
----
-
-`;
-
-      await writeFile(filePath, frontmatter + body, 'utf8');
-      state.ingested[id] = { slug, at: new Date().toISOString(), source: source.id, link };
+      state.ingested[id] = {
+        slug,
+        status: 'published',
+        at: new Date().toISOString(),
+        source: source.id,
+        link,
+        reviewed: true,
+      };
       created += 1;
-      console.log(`[crawl] 新增 ${slug}.md ← ${source.id}`);
+      console.log(`[crawl] 已发布 ${slug}.md ← ${source.id}`);
     }
   }
 
+  state.version = 2;
   state.updatedAt = new Date().toISOString();
   await writeFile(STATE_PATH, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
-  console.log(`[crawl] 完成，本次新增 ${created} 篇。`);
+  await writeFile(REJECTED_PATH, `${JSON.stringify(rejected, null, 2)}\n`, 'utf8');
+  console.log(`[crawl] 完成，本次新发布 ${created} 篇。`);
 }
 
 main().catch((err) => {

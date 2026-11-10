@@ -41,7 +41,7 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 
 | 命令 / 工作流 | 作用 |
 |---------------|------|
-| `npm run crawl` | 读取 `config/crawl-sources.json` 中的 RSS，写入 `src/content/blog/brief-*.md` |
+| `npm run crawl` | 中文/英文 RSS → DeepSeek 写稿 + 审核 → `auto-*.md`（需 `DEEPSEEK_API_KEY`） |
 | `.github/workflows/crawl.yml` | 每周一 01:30 UTC 定时抓取，有更新则自动 commit |
 | `.github/workflows/deploy.yml` | `main` 推送后构建并部署 |
 
@@ -50,7 +50,7 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 1. **SSH / rsync（默认）** — 在仓库 Secrets 配置：`SSH_PRIVATE_KEY`、`SSH_HOST`、`SSH_USER`、`DEPLOY_PATH`（服务器上静态目录）。  
 2. **GitHub Pages** — 仓库 Variables 设置 `USE_GITHUB_PAGES=true`，并在仓库 Pages 里选用 `gh-pages` 分支；`public/CNAME` 已含 `quitsmoking.aivelo.net`。
 
-抓取状态与去重见 `data/crawl-state.json`；可按需编辑 `config/crawl-sources.json` 中的源与关键词。
+在 GitHub **Settings → Secrets** 配置 `DEEPSEEK_API_KEY`。抓取状态见 `data/crawl-state.json`，未通过审核见 `data/crawl-rejected.json`。稿源与关键词见 `config/crawl-sources.json`。
 
 ## SEO / GEO
 

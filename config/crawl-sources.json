@@ -1,27 +1,44 @@
 {
-  "maxNewPerRun": 5,
-  "keywordPattern": "\\btobacco\\b|\\bsmoking\\b|\\bcigarette\\b|\\bnicotine\\b|\\bvape\\b|\\bvaping\\b|\\bsecondhand\\b|\\bcessation\\b|\\bquitting\\b|\\bFCTC\\b|Framework Convention on Tobacco|tobacco control",
+  "maxNewPerRun": 2,
+  "keywordPatternZh": "烟草|吸烟|戒烟|尼古丁|二手|电子烟|控烟|无烟|卷烟|加热烟草|税",
+  "keywordPatternEn": "\\btobacco\\b|\\bsmoking\\b|\\bcigarette\\b|\\bnicotine\\b|\\bvape\\b|\\bcessation\\b|\\bquitting\\b|\\bFCTC\\b|Framework Convention on Tobacco|tobacco control",
+  "deepseek": {
+    "writeModel": "deepseek-chat",
+    "reviewModel": "deepseek-chat",
+    "pauseMsBetweenCalls": 1200
+  },
   "sources": [
     {
-      "id": "who-news",
-      "label": "WHO News",
+      "id": "who-news-zh",
+      "label": "世界卫生组织（中文新闻）",
+      "url": "https://www.who.int/rss-feeds/news-chinese.xml",
+      "lang": "zh",
+      "defaultCategory": "烟草知识",
+      "enabled": true
+    },
+    {
+      "id": "people-health",
+      "label": "人民网健康频道",
+      "url": "http://www.people.com.cn/rss/health.xml",
+      "lang": "zh",
+      "defaultCategory": "吸烟危害",
+      "enabled": true
+    },
+    {
+      "id": "who-news-en",
+      "label": "WHO News (EN)",
       "url": "https://www.who.int/rss-feeds/news-english.xml",
+      "lang": "en",
       "defaultCategory": "烟草知识",
       "enabled": true
     },
     {
       "id": "pubmed-cessation",
       "label": "PubMed — smoking cessation",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=smoking+cessation&limit=20",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=smoking+cessation&limit=15",
+      "lang": "en",
       "defaultCategory": "戒烟方法",
-      "enabled": true
-    },
-    {
-      "id": "pubmed-secondhand",
-      "label": "PubMed — secondhand smoke",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/rss/search/?term=secondhand+smoke&limit=15",
-      "defaultCategory": "吸烟危害",
-      "enabled": true
+      "enabled": false
     }
   ]
 }
