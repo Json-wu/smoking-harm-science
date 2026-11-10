@@ -2,7 +2,7 @@
 
 吸烟危害与戒烟科普站，整理香烟相关的公开知识与研究资料，帮助想戒烟的人了解烟草的真实影响。
 
-**正式域名：** [https://quitsmoking.aivelo.net](https://quitsmoking.aivelo.net)
+**正式域名：** [https://yan.aivelo.net](https://yan.aivelo.net)
 
 ## 技术栈
 
@@ -24,10 +24,10 @@ npm run build
 npm run preview
 ```
 
-构建默认使用 `https://quitsmoking.aivelo.net` 作为 `site`（canonical、sitemap）。如需覆盖：
+构建默认使用 `https://yan.aivelo.net` 作为 `site`（canonical、sitemap）。如需覆盖：
 
 ```bash
-SITE_URL=https://quitsmoking.aivelo.net npm run build
+SITE_URL=https://yan.aivelo.net npm run build
 ```
 
 ## 内容
@@ -48,7 +48,7 @@ SITE_URL=https://quitsmoking.aivelo.net npm run build
 **部署（二选一）**
 
 1. **SSH / rsync（默认）** — 在仓库 Secrets 配置：`SSH_PRIVATE_KEY`、`SSH_HOST`、`SSH_USER`、`DEPLOY_PATH`（服务器上静态目录）。  
-2. **GitHub Pages** — 仓库 Variables 设置 `USE_GITHUB_PAGES=true`，并在仓库 Pages 里选用 `gh-pages` 分支；`public/CNAME` 已含 `quitsmoking.aivelo.net`。
+2. **GitHub Pages** — 仓库 Variables 设置 `USE_GITHUB_PAGES=true`，并在仓库 Pages 里选用 `gh-pages` 分支；`public/CNAME` 已含 `yan.aivelo.net`。
 
 在 GitHub **Settings → Secrets** 配置 `DEEPSEEK_API_KEY`。国外 RSS 成稿也须为**简体中文**（DeepSeek 写稿+审核+脚本校验）。抓取状态见 `data/crawl-state.json`，未通过见 `data/crawl-rejected.json`。
 

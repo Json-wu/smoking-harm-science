@@ -2,7 +2,7 @@
 
 > 面向中文读者的戒烟与烟草健康科普静态站，内容基于世界卫生组织、各国公共卫生机构及同行评议研究。
 
-站点地址：https://quitsmoking.aivelo.net/
+站点地址：https://yan.aivelo.net/
 
 ## 站点说明
 
@@ -12,14 +12,14 @@
 
 ## 核心页面
 
-- 首页 https://quitsmoking.aivelo.net/ ：站点介绍、最新文章、小程序入口
-- 关于 https://quitsmoking.aivelo.net/about/ ：定位、来源原则、小程序说明
-- 戒烟小技巧 https://quitsmoking.aivelo.net/tips/ ：即时应对与小程序功能说明
+- 首页 https://yan.aivelo.net/ ：站点介绍、最新文章、小程序入口
+- 关于 https://yan.aivelo.net/about/ ：定位、来源原则、小程序说明
+- 戒烟小技巧 https://yan.aivelo.net/tips/ ：即时应对与小程序功能说明
 - 分类页
-  - https://quitsmoking.aivelo.net/category/harm/ （吸烟危害）
-  - https://quitsmoking.aivelo.net/category/methods/ （戒烟方法）
-  - https://quitsmoking.aivelo.net/category/knowledge/ （烟草知识）
-- 科普文章 https://quitsmoking.aivelo.net/blog/{slug}/ 及 Markdown 副本 https://quitsmoking.aivelo.net/blog/{slug}.md
+  - https://yan.aivelo.net/category/harm/ （吸烟危害）
+  - https://yan.aivelo.net/category/methods/ （戒烟方法）
+  - https://yan.aivelo.net/category/knowledge/ （烟草知识）
+- 科普文章 https://yan.aivelo.net/blog/{slug}/ 及 Markdown 副本 https://yan.aivelo.net/blog/{slug}.md
 
 ## 内容原则
 

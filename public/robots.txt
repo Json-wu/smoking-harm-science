@@ -13,4 +13,4 @@ Allow: /
 User-agent: Bytespider
 Allow: /
 
-Sitemap: https://quitsmoking.aivelo.net/sitemap-index.xml
+Sitemap: https://yan.aivelo.net/sitemap-index.xml

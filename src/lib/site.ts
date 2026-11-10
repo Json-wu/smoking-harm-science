@@ -1,6 +1,6 @@
 export const siteName = '吸烟危害与戒烟科普';
 
-export const siteUrl = 'https://quitsmoking.aivelo.net';
+export const siteUrl = 'https://yan.aivelo.net';
 
 export const siteDescription =
   '整理吸烟危害、烟草知识与科学戒烟方法的公开资料，帮助想了解烟草真实影响、正在考虑戒烟的读者做出知情选择。';

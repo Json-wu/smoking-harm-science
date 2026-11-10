@@ -31,7 +31,7 @@ const VALID_CATEGORIES = new Set(['吸烟危害', '戒烟方法', '烟草知识'
 
 const parser = new Parser({
   timeout: 30_000,
-  headers: { 'User-Agent': 'smoking-harm-science-crawl/2.0 (+https://quitsmoking.aivelo.net)' },
+  headers: { 'User-Agent': 'smoking-harm-science-crawl/2.0 (+https://yan.aivelo.net)' },
 });
 
 function requireApiKey() {
