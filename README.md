@@ -56,7 +56,8 @@ SITE_URL=https://yan.aivelo.net npm run build
 
 ## SEO / GEO
 
-- `public/robots.txt`、`public/llms.txt`；sitemap 构建时生成
+- `public/robots.txt`、`public/llms.txt`；构建后输出 `dist/sitemap.xml`
+- IndexNow + GSC sitemap：部署后对**变更博客 URL**自动通知，见 [docs/SEARCH_INDEXING.md](docs/SEARCH_INDEXING.md)
 - 全站 Open Graph / Twitter Card、canonical、`hreflang=zh-CN`
 - JSON-LD：`WebSite`、文章 `Article`、分类 `CollectionPage`、面包屑 `BreadcrumbList`
 - 文章 Markdown 副本：`/blog/{slug}.md`（HTML `<head>` 中 `rel=alternate`）
