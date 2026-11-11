@@ -39,13 +39,60 @@ import TipsEntryLine from '@/components/TipsEntryLine.astro';
 
   const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
 
+    let lockedScrollY = 0;
+
+    const lockBodyScroll = (lock) => {
+      if (lock) {
+        lockedScrollY = window.scrollY;
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${lockedScrollY}px`;
+        document.body.style.left = '0';
+        document.body.style.right = '0';
+        document.body.style.width = '100%';
+        document.body.style.overflow = 'hidden';
+      } else {
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.left = '';
+        document.body.style.right = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, lockedScrollY);
+      }
+    };
+
+    const hideMobileDrawerAfterClose = () => {
+      const onEnd = (e) => {
+        if (e.propertyName !== 'transform' || drawer.classList.contains('is-open')) return;
+        drawer.removeEventListener('transitionend', onEnd);
+        if (!isDesktop()) drawer.style.display = 'none';
+      };
+      drawer.addEventListener('transitionend', onEnd);
+    };
+
     const setOpen = (open) => {
+      if (!isDesktop()) {
+        if (open) {
+          drawer.style.display = 'flex';
+          void drawer.offsetHeight;
+        }
+        lockBodyScroll(open);
+      }
+
       drawer.classList.toggle('is-open', open);
       backdrop.classList.toggle('is-visible', open);
       openBtn.setAttribute('aria-expanded', String(open));
       drawer.setAttribute('aria-hidden', String(!open));
       backdrop.setAttribute('aria-hidden', String(!open));
-      document.body.style.overflow = open ? 'hidden' : '';
+
+      if (!isDesktop() && !open) {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          drawer.style.display = 'none';
+        } else {
+          hideMobileDrawerAfterClose();
+        }
+      }
+
       if (isDesktop()) {
         drawer.setAttribute('aria-hidden', 'false');
         backdrop.setAttribute('aria-hidden', 'true');
@@ -61,6 +108,7 @@ import TipsEntryLine from '@/components/TipsEntryLine.astro';
       }
     };
 
+    if (!isDesktop()) drawer.style.display = 'none';
     setOpen(false);
 
     openBtn.addEventListener('click', () => setOpen(true));
