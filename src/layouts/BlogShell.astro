@@ -55,7 +55,7 @@ const canonical = canonicalPath
   jsonLd={jsonLd}
 >
   <CalmAmbience />
-  <div class="relative z-10 mx-auto w-full max-w-7xl">
+  <div class="relative z-10 mx-auto w-full min-w-0 max-w-7xl overflow-x-clip">
     <MobileArticleBar />
     <div class="flex min-h-[calc(100dvh-var(--header-h))] flex-col lg:flex-row">
       <ArticleSidebar posts={posts} currentSlug={currentSlug} tipsActive={tipsActive} />

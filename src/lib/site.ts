@@ -2,6 +2,9 @@ export const siteName = '吸烟危害与戒烟科普';
 
 export const siteUrl = 'https://yan.aivelo.net';
 
+/** Google Tag Manager 容器（GA4 等在 GTM 后台配置） */
+export const gtmContainerId = 'GTM-P569LFD9';
+
 export const siteDescription =
   '整理吸烟危害、烟草知识与科学戒烟方法的公开资料，帮助想了解烟草真实影响、正在考虑戒烟的读者做出知情选择。';
 
@@ -11,6 +14,13 @@ export const miniProgram = {
   /** 太阳码资源见 public/images/miniprogram/code-{430,860,1280}.jpg */
   qrPlaceholder: false,
 };
+
+/** 微信搜一搜官方物料（WebP，见 public/images/miniprogram/soso/） */
+export const wechatSosoMaterial = {
+  fullLight: '/images/miniprogram/soso/soso-material-full-light',
+  fullDark: '/images/miniprogram/soso/soso-material-full-dark',
+  bar: '/images/miniprogram/soso/soso-material-bar',
+} as const;
 
 /** 小程序功能说明（客观列举，不承诺疗效） */
 export const miniProgramFeatures = [

@@ -61,4 +61,5 @@ SITE_URL=https://yan.aivelo.net npm run build
 - 全站 Open Graph / Twitter Card、canonical、`hreflang=zh-CN`
 - JSON-LD：`WebSite`、文章 `Article`、分类 `CollectionPage`、面包屑 `BreadcrumbList`
 - 文章 Markdown 副本：`/blog/{slug}.md`（HTML `<head>` 中 `rel=alternate`）
-- 小程序太阳码：`public/images/miniprogram/`
+- 小程序太阳码：`public/images/miniprogram/code-*.jpg`
+- 微信搜一搜物料（WebP）：`public/images/miniprogram/soso/`

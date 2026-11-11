@@ -11,8 +11,9 @@
 <script is:inline>
   (function () {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const root = document.documentElement;
-    if (!reduced) {
+    if (!reduced && finePointer) {
       let raf = 0;
       window.addEventListener(
         'pointermove',

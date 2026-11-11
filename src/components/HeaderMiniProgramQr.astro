@@ -1,0 +1,77 @@
+---
+import { miniProgram } from '@/lib/site';
+
+interface Props {
+  class?: string;
+  /** desktop：标题旁，悬停放大 1280；mobile：主题按钮旁，点击切换 860 */
+  variant: 'desktop' | 'mobile';
+}
+
+const { class: className = '', variant } = Astro.props;
+
+const qr430 = '/images/miniprogram/code-430.jpg';
+const qr860 = '/images/miniprogram/code-860.jpg';
+const qr1280 = '/images/miniprogram/code-1280.jpg';
+const label = `「${miniProgram.name}」微信小程序码`;
+const triggerId = `header-qr-trigger-${variant}`;
+const flyoutId = `header-qr-flyout-${variant}`;
+---
+
+<div
+  class:list={['header-qr', variant === 'mobile' && 'header-qr--mobile', variant === 'desktop' && 'header-qr--desktop', className]}
+  data-header-qr-root
+  data-variant={variant}
+>
+  <button
+    type="button"
+    class="header-qr__trigger"
+    id={triggerId}
+    aria-label={`查看${label}`}
+    aria-expanded="false"
+    aria-controls={flyoutId}
+  >
+    <img
+      class="header-qr__thumb"
+      src={qr430}
+      width="430"
+      height="430"
+      alt=""
+      decoding="async"
+      loading="eager"
+    />
+    <span class="sr-only">{label}</span>
+  </button>
+
+  <div class="header-qr__flyout" id={flyoutId} role="region" aria-hidden="true">
+    <div class="header-qr__flyout-card theme-card">
+      {
+        variant === 'desktop' ? (
+          <>
+            <img
+              class="header-qr__zoom header-qr__zoom--desktop"
+              src={qr1280}
+              width="1280"
+              height="1280"
+              alt={label}
+              decoding="async"
+              loading="lazy"
+            />
+            <p class="header-qr__hint text-theme-muted">微信扫一扫打开「{miniProgram.name}」</p>
+          </>
+        ) : (
+          <>
+            <img
+              class="header-qr__zoom header-qr__zoom--mobile"
+              src={qr860}
+              width="860"
+              height="860"
+              alt={label}
+              decoding="async"
+            />
+            <p class="header-qr__hint text-theme-muted">长按识别，或在微信搜一搜输入「{miniProgram.name}」</p>
+          </>
+        )
+      }
+    </div>
+  </div>
+</div>

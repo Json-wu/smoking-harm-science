@@ -1,0 +1,80 @@
+---
+import { miniProgram, wechatSosoMaterial } from '@/lib/site';
+
+interface Props {
+  /** 完整物料（码+搜一搜条）或仅搜一搜横条 */
+  variant?: 'full' | 'bar';
+  class?: string;
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  /** 外层最大宽度，默认与文章入口一致 */
+  maxWidthClass?: string;
+}
+
+const {
+  variant = 'full',
+  class: className = '',
+  sizes = '(max-width: 640px) 100vw, 22.5rem',
+  loading = 'lazy',
+  maxWidthClass = 'max-w-[22.5rem]',
+} = Astro.props;
+
+const widths = variant === 'bar' ? ([720, 1024] as const) : ([480, 720, 1024] as const);
+const barBase = wechatSosoMaterial.bar;
+const lightBase = wechatSosoMaterial.fullLight;
+const darkBase = wechatSosoMaterial.fullDark;
+
+const srcset = (base: string) => widths.map((w) => `${base}-${w}.webp ${w}w`).join(', ');
+
+const alt = `微信搜一搜打开「${miniProgram.name}」：扫码小程序码或在搜一搜输入关键词`;
+const intrinsicHeight = variant === 'bar' ? 164 : 377;
+---
+
+<figure
+  class:list={['wx-soso-material-wrap', maxWidthClass, className]}
+  aria-label={alt}
+>
+  {
+    variant === 'full' ? (
+      <>
+        <img
+          class="wx-soso-material wx-soso-material--light"
+          src={`${lightBase}-720.webp`}
+          srcset={srcset(lightBase)}
+          sizes={sizes}
+          width={1024}
+          height={intrinsicHeight}
+          alt={alt}
+          loading={loading}
+          decoding="async"
+        />
+        <img
+          class="wx-soso-material wx-soso-material--dark"
+          src={`${darkBase}-720.webp`}
+          srcset={srcset(darkBase)}
+          sizes={sizes}
+          width={1024}
+          height={intrinsicHeight}
+          alt={alt}
+          loading={loading}
+          decoding="async"
+        />
+      </>
+    ) : (
+      <img
+        class="wx-soso-material"
+        src={`${barBase}-720.webp`}
+        srcset={srcset(barBase)}
+        sizes={sizes}
+        width={1024}
+        height={intrinsicHeight}
+        alt={alt}
+        loading={loading}
+        decoding="async"
+      />
+    )
+  }
+  <figcaption class="sr-only">
+    {alt}。{miniProgram.hint}
+  </figcaption>
+</figure>

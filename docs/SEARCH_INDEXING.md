@@ -11,6 +11,14 @@
 
 无博客稿变更的 push（如只改样式）**不会**发收录通知。
 
+## 访问统计（GTM / GA4）
+
+全站通过 **Google Tag Manager**（`GTM-P569LFD9`，见 `src/lib/site.ts`）加载；**GA4 衡量 ID 请在 [GTM 后台](https://tagmanager.google.com/) 添加「Google Analytics: GA4 配置」标签**并发布容器，无需在页面再单独贴 `gtag.js`。
+
+- **生产**（`npm run build` / deploy）默认注入 GTM
+- **本地 dev** 默认不加载；需调试时设 `PUBLIC_GTM_ENABLE=1`
+- 换容器：环境变量 `PUBLIC_GTM_ID` 覆盖默认 ID
+
 ## IndexNow
 
 - 密钥文件：`public/702ac6e18573440ab2262eaca1147090.txt`

@@ -1,8 +1,9 @@
 ---
 import '@/styles/global.css';
+import GoogleTagManager from '@/components/GoogleTagManager.astro';
 import Header from '@/components/Header.astro';
 import Footer from '@/components/Footer.astro';
-import { siteName, siteDescription, siteUrl } from '@/lib/site';
+import { siteName, siteDescription, siteUrl, gtmContainerId } from '@/lib/site';
 import { buildWebSiteJsonLd, mergeJsonLd } from '@/lib/seo';
 
 interface Props {
@@ -39,12 +40,17 @@ const ogImage = new URL('/favicon.svg', siteUrl).href;
 const robots = noindex ? 'noindex, follow' : 'index, follow';
 const structuredData = mergeJsonLd(buildWebSiteJsonLd(), ...jsonLd);
 const keywordsContent = keywords?.trim() || undefined;
+
+const gtmId = (import.meta.env.PUBLIC_GTM_ID ?? gtmContainerId).trim();
+const gtmEnabled =
+  Boolean(gtmId) && (import.meta.env.PROD || import.meta.env.PUBLIC_GTM_ENABLE === '1');
 ---
 
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
+    {gtmEnabled && <GoogleTagManager containerId={gtmId} placement="head" />}
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="description" content={description} />
     {keywordsContent && <meta name="keywords" content={keywordsContent} />}
@@ -95,9 +101,10 @@ const keywordsContent = keywords?.trim() || undefined;
       ))
     }
   </head>
-  <body class="relative flex min-h-screen flex-col">
+  <body class="relative flex min-h-screen flex-col overflow-x-clip">
+    {gtmEnabled && <GoogleTagManager containerId={gtmId} placement="body" />}
     <Header />
-    <main class="relative flex-1 pb-[env(safe-area-inset-bottom)]">
+    <main class="relative min-w-0 flex-1 overflow-x-clip pb-[env(safe-area-inset-bottom)]">
       <slot />
     </main>
     <Footer minimal={footerMinimal} />

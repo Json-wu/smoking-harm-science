@@ -1,0 +1,44 @@
+---
+/**
+ * Google Tag Manager：容器内可配置 GA4 等标签。
+ * @see https://developers.google.com/tag-platform/tag-manager/web
+ */
+interface Props {
+  containerId: string;
+  /** head = 引导脚本；body = noscript 备用 iframe（应紧挨 <body> 开头） */
+  placement: 'head' | 'body';
+}
+
+const { containerId, placement } = Astro.props;
+---
+
+{
+  placement === 'head' && (
+    <script is:inline define:vars={{ containerId }}>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0];
+        var j = d.createElement(s);
+        var dl = l !== 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', containerId);
+    </script>
+  )
+}
+
+{
+  placement === 'body' && (
+    <noscript>
+      <iframe
+        src={`https://www.googletagmanager.com/ns.html?id=${containerId}`}
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"
+        title="Google Tag Manager"
+      ></iframe>
+    </noscript>
+  )
+}

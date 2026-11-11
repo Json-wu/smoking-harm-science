@@ -1,0 +1,59 @@
+<script>
+  function initHeaderQrAll() {
+    const mobileLayout = () => window.matchMedia('(max-width: 1023px)').matches;
+
+    const setMobileOpen = (root, open) => {
+      root.classList.toggle('is-open', open);
+      const trigger = root.querySelector('.header-qr__trigger');
+      const flyout = root.querySelector('.header-qr__flyout');
+      trigger?.setAttribute('aria-expanded', String(open));
+      flyout?.setAttribute('aria-hidden', String(!open));
+    };
+
+    const closeAllMobile = () => {
+      document.querySelectorAll('.header-qr--mobile.is-open').forEach((root) => setMobileOpen(root, false));
+    };
+
+    document.querySelectorAll('[data-header-qr-root]').forEach((root) => {
+      const variant = root.getAttribute('data-variant');
+      const trigger = root.querySelector('.header-qr__trigger');
+      if (!trigger || trigger.dataset.qrBound === '1') return;
+      trigger.dataset.qrBound = '1';
+
+      if (variant === 'mobile') {
+        trigger.addEventListener('click', (e) => {
+          if (!mobileLayout()) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const willOpen = !root.classList.contains('is-open');
+          if (willOpen) closeAllMobile();
+          setMobileOpen(root, willOpen);
+        });
+      }
+    });
+
+    if (document.documentElement.dataset.headerQrOutsideBound !== '1') {
+      document.documentElement.dataset.headerQrOutsideBound = '1';
+      document.addEventListener('click', (e) => {
+        if (!mobileLayout()) return;
+        const openRoot = document.querySelector('.header-qr--mobile.is-open');
+        if (!openRoot) return;
+        const target = e.target;
+        if (!(target instanceof Node)) return;
+        const flyout = openRoot.querySelector('.header-qr__flyout');
+        const trigger = openRoot.querySelector('.header-qr__trigger');
+        if (flyout?.contains(target) || trigger?.contains(target)) return;
+        closeAllMobile();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAllMobile();
+    });
+
+    window.matchMedia('(hover: hover)').addEventListener('change', closeAllMobile);
+  }
+
+  initHeaderQrAll();
+  document.addEventListener('astro:page-load', initHeaderQrAll);
+</script>
