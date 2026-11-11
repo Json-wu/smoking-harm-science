@@ -781,18 +781,29 @@
     border-top: 1px solid var(--color-border);
     background: var(--color-surface-solid);
     box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.18);
-    transform: translateY(105%);
-    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    transform: translate3d(0, calc(100% + 2.5rem), 0);
+    transition:
+      transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+      visibility 0.3s step-end;
     padding-bottom: env(safe-area-inset-bottom);
+    visibility: hidden;
+    pointer-events: none;
   }
 
   .sidebar-drawer.is-open {
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+      visibility 0s;
   }
 
   @media (min-width: 1024px) {
     .sidebar-drawer {
       transform: none;
+      visibility: visible;
+      pointer-events: auto;
       box-shadow: none;
       border-top: none;
       transition: none;

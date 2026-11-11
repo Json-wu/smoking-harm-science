@@ -14,7 +14,7 @@ interface Props {
 const { posts, currentSlug, tipsActive = false } = Astro.props;
 ---
 
-<div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+<div id="sidebar-backdrop" class="sidebar-backdrop" aria-hidden="true" inert></div>
 
 <aside
   id="article-sidebar-drawer"

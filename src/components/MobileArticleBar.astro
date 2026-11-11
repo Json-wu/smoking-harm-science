@@ -34,13 +34,34 @@ import TipsEntryLine from '@/components/TipsEntryLine.astro';
     const closeBtn = document.getElementById('sidebar-close-btn');
 
     if (!openBtn || !drawer || !backdrop) return;
+    if (openBtn.dataset.bound === '1') return;
+    openBtn.dataset.bound = '1';
+
+  const isDesktop = () => window.matchMedia('(min-width: 1024px)').matches;
 
     const setOpen = (open) => {
       drawer.classList.toggle('is-open', open);
       backdrop.classList.toggle('is-visible', open);
       openBtn.setAttribute('aria-expanded', String(open));
+      drawer.setAttribute('aria-hidden', String(!open));
+      backdrop.setAttribute('aria-hidden', String(!open));
       document.body.style.overflow = open ? 'hidden' : '';
+      if (isDesktop()) {
+        drawer.setAttribute('aria-hidden', 'false');
+        backdrop.setAttribute('aria-hidden', 'true');
+        if ('inert' in drawer) {
+          drawer.inert = false;
+          backdrop.inert = true;
+        }
+        return;
+      }
+      if ('inert' in drawer) {
+        drawer.inert = !open;
+        backdrop.inert = !open;
+      }
     };
+
+    setOpen(false);
 
     openBtn.addEventListener('click', () => setOpen(true));
     closeBtn?.addEventListener('click', () => setOpen(false));
