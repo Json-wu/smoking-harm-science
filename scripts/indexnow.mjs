@@ -43,7 +43,7 @@ async function main() {
     urlList = await urlsFromSitemap(sitemapPath);
   }
 
-  const ok = await submitIndexNowUrls(urlList);
+  const { ok } = await submitIndexNowUrls(urlList, { mode: 'bulk' });
   if (!ok) process.exit(1);
 
   const host = siteHostFromEnv();

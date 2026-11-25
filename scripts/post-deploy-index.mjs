@@ -20,7 +20,7 @@ async function main() {
 
   console.log('[post-deploy-index] 变更 URL:', changedUrls.join(', '));
 
-  const indexOk = await submitIndexNowUrls(changedUrls);
+  const { ok: indexOk } = await submitIndexNowUrls(changedUrls, { mode: 'bulk' });
   if (!indexOk) process.exitCode = 1;
 
   const gsc = await submitGscSitemap();

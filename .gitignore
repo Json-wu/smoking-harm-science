@@ -20,6 +20,7 @@ dist/
 
 # CI 诊断（不提交）
 data/crawl-last-run.json
+data/indexnow-backfill-last.json
 
 # cursor (keep project rules)
 .cursor/*

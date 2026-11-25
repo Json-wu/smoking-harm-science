@@ -2,6 +2,11 @@ name: One-shot indexing backfill
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ops/indexnow-backfill.trigger'
 
 permissions:
   contents: read
@@ -37,4 +42,13 @@ jobs:
         run: node scripts/one-shot-indexing-backfill.mjs
         env:
           SITE_URL: https://yan.aivelo.net
+          INDEXNOW_MODE: both
+          INDEXNOW_PER_URL_DELAY_MS: 80
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Upload IndexNow backfill report
+        uses: actions/upload-artifact@v4
+        with:
+          name: indexnow-backfill-${{ github.run_id }}
+          path: data/indexnow-backfill-last.json
+          if-no-files-found: error

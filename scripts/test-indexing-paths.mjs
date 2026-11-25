@@ -33,8 +33,12 @@ async function checkKeyFileOnSite() {
 
 async function checkIndexNowApi() {
   const origin = siteOrigin();
-  const ok = await submitIndexNowUrls([`${origin}/`]);
-  return { ok, detail: ok ? 'api.indexnow.org 接受提交' : 'API 返回非 200/202' };
+  const { ok, report } = await submitIndexNowUrls([`${origin}/`], { mode: 'bulk' });
+  const bulk = report?.bulk?.[0];
+  const detail = ok
+    ? `HTTP ${bulk?.status ?? '200'}（api.indexnow.org + bing.com）`
+    : 'API 返回非 200/202';
+  return { ok, detail };
 }
 
 async function checkGscPath() {

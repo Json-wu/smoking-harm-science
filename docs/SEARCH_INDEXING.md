@@ -23,6 +23,10 @@
 
 ## IndexNow
 
+**在哪里看提交记录：** 不在 indexnow.org，而在 [Bing Webmaster Tools](https://www.bing.com/webmasters) → **报告 / IndexNow Insights**（站点须用与线上一致的 host 验证，例如 `yan.aivelo.net`）。HTTP 200 只表示搜索引擎**已收到**，不等于立刻收录。
+
+建议在 BWT 中「生成 IndexNow 密钥」后，用同一密钥更新 `public/{key}.txt` 与 GitHub Secret `INDEXNOW_KEY`（可选），便于后台归因。
+
 - 密钥文件：`public/702ac6e18573440ab2262eaca1147090.txt`
 - 全量（本地）：`npm run build && npm run indexnow`
 - 指定 URL：`npm run indexnow -- https://yan.aivelo.net/blog/foo/`
@@ -55,7 +59,12 @@ npm run indexnow:backfill
 npm run indexing:test
 ```
 
-GitHub：**Actions → One-shot indexing backfill → Run workflow**（使用仓库 Secret `GOOGLE_SERVICE_ACCOUNT_JSON` 时会同时测 GSC）。
+GitHub：
+
+1. **Actions → One-shot indexing backfill → Run workflow**，或
+2. 更新 `ops/indexnow-backfill.trigger` 并 push 到 `main`（自动跑全量 + 上传 `data/indexnow-backfill-last.json` artifact）
+
+全量提交默认 `INDEXNOW_MODE=both`（bulk POST + 逐条 GET 到 api.indexnow.org 与 bing.com）。
 
 ## 手动试跑（与 CI 相同逻辑）
 
