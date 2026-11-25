@@ -40,6 +40,23 @@
 
 未配置该 Secret 时，仅 IndexNow 会执行，GSC 步骤自动跳过。
 
+## 一次性全量补齐（IndexNow + GSC）
+
+本地或 Actions 在**已构建** `dist/sitemap.xml` 后：
+
+```bash
+npm run build
+npm run indexnow:backfill
+```
+
+通路冒烟测试：
+
+```bash
+npm run indexing:test
+```
+
+GitHub：**Actions → One-shot indexing backfill → Run workflow**（使用仓库 Secret `GOOGLE_SERVICE_ACCOUNT_JSON` 时会同时测 GSC）。
+
 ## 手动试跑（与 CI 相同逻辑）
 
 ```bash

@@ -10,6 +10,8 @@
     "preview": "astro preview",
     "crawl": "node scripts/crawl/index.mjs",
     "indexnow": "node scripts/indexnow.mjs",
+    "indexnow:backfill": "node scripts/one-shot-indexing-backfill.mjs",
+    "indexing:test": "node scripts/test-indexing-paths.mjs",
     "post-deploy-index": "node scripts/post-deploy-index.mjs"
   },
   "dependencies": {
