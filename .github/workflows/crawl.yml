@@ -64,7 +64,9 @@ jobs:
         if: steps.commit.outputs.changes_detected == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh workflow run deploy.yml --ref main
+        run: |
+          INDEX_BEFORE="$(git rev-parse HEAD^)"
+          gh workflow run deploy.yml --ref main -f "index_before=${INDEX_BEFORE}"
 
       - name: Upload crawl output (artifact backup)
         if: always()

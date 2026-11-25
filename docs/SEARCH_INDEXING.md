@@ -5,7 +5,9 @@
 1. **定时/手动抓取**（`crawl.yml`）生成 `auto-*.md` 并 push `main`
 2. **Build and deploy**（`deploy.yml`）构建、部署静态站
 3. **部署成功后**运行 `scripts/post-deploy-index.mjs`：
-   - 用 `github.event.before` → `github.sha` 对比，找出**新增/修改**的 `src/content/blog/*.md`
+   - 用 `GITHUB_BEFORE` → `GITHUB_SHA` 对比，找出**新增/修改**的 `src/content/blog/*.md`
+   - **push**：`github.event.before`；**crawl 触发的 deploy**：workflow 输入 `index_before`（发版前 `HEAD^`）
+   - deploy 作业的 checkout 使用 **`fetch-depth: 0`**，避免浅克隆导致 diff 为空
    - 将对应 `https://yan.aivelo.net/blog/{slug}/` 提交 **IndexNow**
    - 若配置了 GSC 服务账号，向 Search Console **重新提交** `sitemap.xml`（便于 Google 发现新链）
 

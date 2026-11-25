@@ -13,7 +13,11 @@ export function getChangedBlogUrls({ before, after, origin = siteOrigin() }) {
   if (!base || base === ZERO_SHA) {
     try {
       base = execFileSync('git', ['rev-parse', `${head}~1`], { encoding: 'utf8' }).trim();
-    } catch {
+    } catch (err) {
+      console.warn(
+        '[changed-public-urls] 无法解析上一版 commit（常见原因：checkout fetch-depth 过浅）:',
+        err?.message || err,
+      );
       return [];
     }
   }
@@ -26,7 +30,11 @@ export function getChangedBlogUrls({ before, after, origin = siteOrigin() }) {
       .split('\n')
       .map((s) => s.trim())
       .filter(Boolean);
-  } catch {
+  } catch (err) {
+    console.warn(
+      '[changed-public-urls] git diff 失败（before 可能未 fetch 到本地）:',
+      err?.message || err,
+    );
     return [];
   }
 
